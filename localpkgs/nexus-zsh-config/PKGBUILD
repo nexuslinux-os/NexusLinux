@@ -1,0 +1,40 @@
+# Maintainer: Nexus Linux
+# Fork of cachyos-zsh-config (GPL-1.0-only). Zsh configuration for Nexus
+# Linux; content tracks the upstream CachyOS repository (signed tag).
+
+pkgname=nexus-zsh-config
+pkgver=1.0.3
+pkgrel=1
+pkgdesc="Zsh configuration for Nexus Linux"
+arch=(any)
+url="https://github.com/nexuslinux/nexuslinux"
+license=(GPL-1.0-only)
+conflicts=('cachyos-zsh-config')
+provides=('cachyos-zsh-config')
+depends=(
+  fzf
+  oh-my-zsh-git
+  pkgfile
+  powerline-fonts
+  vim
+  zsh
+  zsh-autosuggestions
+  zsh-completions
+  zsh-history-substring-search
+  zsh-syntax-highlighting
+  zsh-theme-powerlevel10k
+)
+makedepends=(
+  git
+)
+source=("git+https://github.com/CachyOS/cachyos-zsh-config.git?signed#tag=v${pkgver}")
+sha256sums=('131d830ced9cda5f7e7058c00aa91075f88c3e7e97dcb92d755537bf5cd459d7')
+validpgpkeys=(
+  B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9  # Vladislav Nepogodin <nepogodin.vlad@gmail.com>
+)
+
+package() {
+    cd "$srcdir/cachyos-zsh-config"
+    install -D -m644 cachyos-config.zsh "$pkgdir/usr/share/nexus-zsh-config/cachyos-config.zsh"
+    install -D -m644 zshrc "$pkgdir/etc/skel/.zshrc"
+}

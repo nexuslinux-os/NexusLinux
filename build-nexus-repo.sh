@@ -35,10 +35,13 @@ export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 # nexus-settings fetches the CachyOS-Settings git tag over a *signed* source.
 # makepkg verifies that signature with $GNUPGHOME (the Nexus keyring above),
 # NOT with the default ~/.gnupg, so the upstream signing keys must live here
-# or the PGP check fails with "bilinmeyen kamu anahtari".
+# or the PGP check fails with "bilinmeyen kamu anahtari". The same applies to
+# nexus-zsh-config, nexus-kernel-manager, nexus-packageinstaller (Vladislav)
+# and nexus-handheld (Peter, Vladislav, Eric).
 gpg --batch --no-tty --recv-keys \
     E8B9AA39F054E30E8290D492C3C4820857F654FE \
-    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 2>/dev/null || true
+    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 \
+    E18447AC260021D31F3FF6C4C8A2A4774B8B63C4 2>/dev/null || true
 gpg --batch --no-tty --list-keys C3C4820857F654FE >/dev/null 2>&1 \
     || echo "UYARI: CachyOS imza anahtari Nexus keyring'e alinamadi (nexus-settings PGP dogrulamasi basarisiz olabilir)" >&2
 
@@ -113,12 +116,19 @@ if [ "$APPLY_SWAP" = 1 ]; then
         -e 's/\bcachyos-wallpapers\b/nexus-wallpapers/g' \
         -e 's/\bcachyos-kde-settings\b/nexus-kde-settings/g' \
         -e 's/\bcachyos-settings\b/nexus-settings/g' \
+        -e 's/\bcachyos-micro-settings\b/nexus-micro-settings/g' \
         -e 's/\bcachyos-fish-config\b/nexus-fish-config/g' \
+        -e 's/\bcachyos-zsh-config\b/nexus-zsh-config/g' \
+        -e 's/\bcachyos-kernel-manager\b/nexus-kernel-manager/g' \
+        -e 's/\bcachyos-packageinstaller\b/nexus-packageinstaller/g' \
+        -e 's/\bcachyos-handheld\b/nexus-handheld/g' \
+        -e 's/\bcachyos-mangowc-dms\b/nexus-mangowc-dms/g' \
+        -e 's/\bcachyos-rate-mirrors\b/nexus-rate-mirrors/g' \
         -e 's/\bcachyos-calamares-next\b/nexus-calamares/g' \
         archiso/airootfs/etc/calamares/modules/netinstall.yaml
     echo "  netinstall.yaml: replaced $N cachyos-* references (remaining: $(grep -c 'cachyos-' archiso/airootfs/etc/calamares/modules/netinstall.yaml || true))"
-    echo "  Remaining cachyos-* references are packages not yet forked"
-    echo "  (themes, kernel-manager, deckify, ...) and are kept for now."
+    echo "  Remaining cachyos-* references are the CachyOS kernel packages"
+    echo "  (linux-cachyos*, chwd, deckify) and are kept as-is."
 
     # Keep the online installer script in sync with the swapped package names.
     sed -i \
@@ -133,14 +143,22 @@ if [ "$APPLY_SWAP" = 1 ]; then
 
 [nexus]
 SigLevel = Optional DatabaseOptional
-Server = file://$ROOT/localpkgs/repo
+# Nexus packages are published as GitHub Release assets (no dedicated mirror
+# yet). pacman appends the db filename (nexus.db) to this URL; GitHub serves
+# the latest release's assets here and follows the redirect transparently.
+Server = https://github.com/nexuslinux/nexuslinux/releases/latest/download/
 EOF
         echo "  appended [nexus] repo to $PACMAN_CONF"
     else
         echo "  [nexus] repo already present in $PACMAN_CONF"
     fi
-    echo "NOTE: [nexus] verifies packages signed by the Nexus master key"
-    echo "      (nexus-keyring: pacman-key --lsign-key). SigLevel=TrustAll is gone."
+    echo "NOTE: [nexus] serves packages from GitHub Releases"
+    echo "      (https://github.com/nexuslinux/nexuslinux/releases/latest/download/)."
+    echo "      Publish the local repo there first with:"
+    echo "          ./release-nexus.sh repo"
+    echo "      Otherwise live installs will not find the nexus-* packages."
+    echo "      Packages are signed by the Nexus master key (nexus-keyring:"
+    echo "      pacman-key --lsign-key). SigLevel=Optional DatabaseOptional."
 else
     echo "==> Dry run (no swap). Re-run with --apply-swap to wire into the ISO build."
 fi

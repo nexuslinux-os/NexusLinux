@@ -38,21 +38,22 @@ sudo pacman -S --needed --noconfirm \
 echo "==> [3/5] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh
 
-# The fork swap is opt-in: it rewrites netinstall.yaml to install nexus-*
-# packages from a [nexus] repo whose Server=file:// path only exists on the
-# build host. On the live ISO that repo is unreachable, so enabling the swap
-# before the Nexus repos are published breaks the live installer. Keep the
-# swap OFF (default) and install the upstream cachyos-* packages instead.
-if [ -n "${NEXUS_SWAP:-}" ]; then
-    echo "==> [4/5] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP set]"
+# The fork swap wires nexus-* packages into netinstall.yaml and points the
+# [nexus] repo at GitHub Releases (no dedicated mirror). Publishing the local
+# repo first makes live installs work:
+#   ./build-nexus-repo.sh && ./release-nexus.sh repo
+# Swap is ON by default now that [nexus] is served from GitHub; set
+# NEXUS_SWAP=0 to keep the upstream cachyos-* packages instead.
+# NOTE: swap ON means netinstall resolves nexus-* packages over the network,
+# so an offline live install requires NEXUS_SWAP=0.
+if [ "${NEXUS_SWAP:-1}" != "0" ]; then
+    echo "==> [4/5] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP=1]"
     ./build-nexus-repo.sh --apply-swap
 else
-    echo "==> [4/5] Skipping fork swap (upstream cachyos-* packages in the ISO)."
-    echo "        Set NEXUS_SWAP=1 to apply the nexus-* swap."
+    echo "==> [4/5] Skipping fork swap (upstream cachyos-* packages in the ISO) [NEXUS_SWAP=0]."
 fi
 
 echo "==> [5/5] Building ISO (profile: $PROFILE)"
-
 # cachyos-calamares-next owns /etc/calamares/modules/netinstall.yaml and
 # packagechooser_desktop.conf, so any copies in the profile airootfs make
 # pacstrap abort with a file conflict. The Nexus versions live at the
@@ -70,6 +71,33 @@ done
 
 ./buildiso.sh -p "$PROFILE" -v 2>&1 | tee "$ROOT/build.log"
 
-echo "==> Bitti. Sonuçlar:"
-echo "    - build log:  $ROOT/build.log"
-echo "    - ISO:        $ROOT/out/<profil>/*.iso  (yalnizca ham ISO; .img/.sig/checksum/pkgs.txt uretilmez)"
+echo "==> [6/6] Release artefaktlari (.sig / SHA256SUMS / .img / pkgs.txt)"
+ISO_PATH="$(ls "$ROOT"/out/"$PROFILE"/*.iso 2>/dev/null | head -n1 || true)"
+if [ -n "$ISO_PATH" ]; then
+    # Sign the ISO with the Nexus master key (same keyring as the packages).
+    if [ -f "$ROOT/localpkgs/nexus-keyring/gnupg/secring.gpg" ] || \
+       [ -f "$ROOT/localpkgs/nexus-keyring/gnupg/private-keys-v1.d" ]; then
+        ( cd "$(dirname "$ISO_PATH")" && \
+          GNUPGHOME="$ROOT/localpkgs/nexus-keyring/gnupg" gpg --batch --yes --detach-sign --output "$(basename "$ISO_PATH").sig" "$(basename "$ISO_PATH")" )
+    fi
+    ( cd "$(dirname "$ISO_PATH")" && sha256sum "$(basename "$ISO_PATH")" > SHA256SUMS )
+    cp -f "$ISO_PATH" "${ISO_PATH%.iso}.img"
+    {
+        grep -rh '^\s*-\s*[a-z0-9@._+-]' "$ROOT/archiso/airootfs/usr/share/nexus-calamares/modules/netinstall.yaml" | sed 's/^\s*-\s*//'
+        cat "$ROOT/archiso/packages.x86_64" 2>/dev/null || true
+    } | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' | sort -u > "$ROOT/out/$PROFILE/pkgs.txt"
+    echo "    - ISO:        $ISO_PATH"
+    echo "    - Imza:       $ISO_PATH.sig (Nexus master key)"
+    echo "    - SHA256:     $ROOT/out/$PROFILE/SHA256SUMS"
+    echo "    - USB imaji:  ${ISO_PATH%.iso}.img (dd ile USB'ye yazilir)"
+    echo "    - Paket list: $ROOT/out/$PROFILE/pkgs.txt"
+    echo ""
+    echo "    GitHub Releases'e yuklemek icin:"
+    echo "        ./release-nexus.sh iso $ISO_PATH"
+else
+    echo "    HATA: out/$PROFILE/*.iso bulunamadi (ISO build hatali olabilir)"
+fi
+
+echo "==> Bitti."
+echo "    Build log:  $ROOT/build.log"
+echo "    Repo yayini: ./release-nexus.sh repo   (once yapilmali)"

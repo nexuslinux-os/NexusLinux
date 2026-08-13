@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh arch / cachyos mirror lists
+Documentation=https://github.com/nexuslinux/nexuslinux
+After=network-online.target nss-lookup.target
+
+[Service]
+Type=oneshot
+StandardOutput=null
+StandardError=journal
+ExecStart=/usr/bin/nexus-rate-mirrors
+IPAccounting=yes

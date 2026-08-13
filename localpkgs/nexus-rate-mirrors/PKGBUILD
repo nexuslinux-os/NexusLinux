@@ -1,0 +1,31 @@
+# Maintainer: Nexus Linux
+# Fork of cachyos-rate-mirrors (GPL-2.0-or-later). Mirror rating service for
+# Nexus Linux. The Nexus [nexus] repository is served from GitHub Releases
+# (single URL) and is intentionally not ranked here; this service keeps
+# rating the Arch and CachyOS mirrors that Nexus is built on.
+
+pkgname=nexus-rate-mirrors
+pkgver=24
+pkgrel=1
+arch=('any')
+install=$pkgname.install
+url="https://github.com/nexuslinux/nexuslinux"
+license=(GPL-2.0-or-later)
+pkgdesc='Nexus - Rate mirrors service'
+depends=(rate-mirrors)
+conflicts=('cachyos-rate-mirrors')
+provides=('cachyos-rate-mirrors')
+source=(
+    nexus-rate-mirrors
+    nexus-rate-mirrors.service
+    nexus-rate-mirrors.timer
+    nexus-rate-mirrors.hook
+)
+sha512sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$pkgname" "$pkgdir/usr/bin/$pkgname"
+    install -Dm644 "$pkgname.service" "$pkgdir/usr/lib/systemd/system/$pkgname.service"
+    install -Dm644 "$pkgname.timer" "$pkgdir/usr/lib/systemd/system/$pkgname.timer"
+    install -Dm644 "$pkgname.hook" "$pkgdir/usr/share/libalpm/hooks/$pkgname.hook"
+}

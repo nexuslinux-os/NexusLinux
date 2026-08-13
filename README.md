@@ -10,8 +10,9 @@ This repository contains the live ISO build configuration and the source for the
 .
 ├── archiso/                    # airootfs overlay, pacman.conf, package lists
 ├── localpkgs/                  # Nexus fork packages (built into a local repo)
-├── build-nexus-iso.sh          # one-shot ISO build
+├── build-nexus-iso.sh          # one-shot ISO build (+ release artifacts)
 ├── build-nexus-repo.sh         # fork package build + profile swap
+├── release-nexus.sh            # publish repo/ISO to GitHub Releases
 ├── buildiso.sh                 # upstream ISO build driver
 └── util-iso.sh                 # profile/version helpers
 ```
@@ -26,7 +27,14 @@ This repository contains the live ISO build configuration and the source for the
 | `nexus-wallpapers` | `cachyos-wallpapers` | Default wallpapers + per-desktop defaults |
 | `nexus-kde-settings` | `cachyos-kde-settings` | Default KDE Plasma settings |
 | `nexus-fish-config` | `cachyos-fish-config` | Fish shell configuration |
+| `nexus-zsh-config` | `cachyos-zsh-config` | Zsh shell configuration |
 | `nexus-settings` | `cachyos-settings` | System settings (systemd services, udev rules) |
+| `nexus-micro-settings` | `cachyos-micro-settings` | Micro tunables (zram, sysctl) |
+| `nexus-kernel-manager` | `cachyos-kernel-manager` | Kernel manager |
+| `nexus-packageinstaller` | `cachyos-packageinstaller` | Package installer |
+| `nexus-handheld` | `cachyos-handheld` | Handheld (Steam Deck-like) support |
+| `nexus-mangowc-dms` | `cachyos-mangowc-dms` | MangoWM (+DMS) settings |
+| `nexus-rate-mirrors` | `cachyos-rate-mirrors` | Mirror rating service/timer |
 | `nexus-calamares` | `cachyos-calamares-next` | Calamares installer (built from source) |
 
 ## Building the ISO
@@ -53,17 +61,27 @@ This script:
 2. Installs all build/makedepends in one `pacman` call
 3. Builds every fork package in `localpkgs/` and populates `localpkgs/repo/`
    (transient network failures are retried up to 3 times)
-4. Builds the ISO and writes it to `build/out/`
+4. Swaps `cachyos-*` → `nexus-*` in the profile (default ON) and points the
+   `[nexus]` repo at **GitHub Releases** (`latest/download/`), so the live
+   installer and installed systems resolve Nexus packages over the network
+5. Builds the ISO and writes release artifacts to `out/<profile>/`
+   (`.sig`, `SHA256SUMS`, `.img`, `pkgs.txt`)
 
-The ISO installs the **upstream `cachyos-*` packages** (all reachable from the
-CachyOS mirror). The Nexus fork packages are built but not wired into the
-installer by default, because the `[nexus]` repo currently points at a
-`file://` path that only exists on the build host. Once the Nexus repos are
-published, enable the fork swap with:
+Publishing the local repo before an ISO build makes live installs work:
 
 ```bash
-NEXUS_SWAP=1 ./build-nexus-iso.sh
+./build-nexus-repo.sh           # build + sign fork packages, create local repo
+./release-nexus.sh repo         # publish the repo as a GitHub Release
+./build-nexus-iso.sh            # ISO with the nexus-* swap (default ON)
+./release-nexus.sh iso out/desktop/nexus.iso   # publish the ISO
 ```
+
+- Set `NEXUS_SWAP=0` to keep the upstream `cachyos-*` packages instead (also
+  the only way to get an offline-capable installer, since the `[nexus]` repo
+  is network-only).
+- GitHub Releases is used as the package server (no dedicated mirror yet);
+  every update is a new release. Assets are served at
+  `https://github.com/nexuslinux/nexuslinux/releases/latest/download/`.
 
 ### Manual steps
 
@@ -110,8 +128,11 @@ master key:
 - The `nexus-keyring` package's install script runs `pacman-key --add` and
   `pacman-key --lsign-key D7E66A16EB101E21ADC20D6315F9E61760540D3C`, so installed
   systems trust the key and verify the signatures.
-- The `[nexus]` repo (added by `./build-nexus-repo.sh --apply-swap`) therefore uses
-  `SigLevel = Optional DatabaseOptional` instead of `TrustAll`.
+- The `[nexus]` repo (added by `./build-nexus-repo.sh --apply-swap`) points at
+  GitHub Releases and uses `SigLevel = Optional DatabaseOptional` instead of `TrustAll`.
+- `release-nexus.sh repo` publishes `nexus.db(.sig)`, `nexus.files(.sig)` and every
+  `.pkg.tar.zst(.sig)` as release assets; `release-nexus.sh iso <file.iso>` publishes
+  the ISO with its signature, checksum, `.img` and package list.
 
 Rebuild the keyring after any change with:
 
@@ -124,6 +145,6 @@ cd localpkgs/nexus-keyring && GNUPGHOME="$PWD/gnupg" GPGKEY=D7E66A16EB101E21ADC2
 - The installed system's `pacman.conf` is generated from `archiso/pacman.conf` +
   `pacman-more.conf` by shellprocess scripts, and the repo section name must match the
   mirror's database filename. Nexus keeps the `cachyos` repo section names (and
-  `/etc/pacman.d/cachyos-*` paths) until the Nexus repositories go live.
-- Packages that are not yet forked (themes, `chwd`, kernel-manager, deckify, ...) remain
+  `/etc/pacman.d/cachyos-*` paths) for the CachyOS repos.
+- Packages that are not forked (`linux-cachyos*` kernels, `chwd`, deckify, ...) remain
   as upstream `cachyos-*` packages in the profile on purpose.
