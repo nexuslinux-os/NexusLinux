@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Nexus Wallpaper
+Name[tr]=Nexus Duvar Kağıdı
+Comment=Apply the Nexus default wallpaper in window-manager sessions
+Comment[tr]=Pencere yöneticisi oturumlarında Nexus varsayılan duvar kağıdını uygular
+Exec=/usr/share/nexus-settings/scripts/set-nexus-wallpaper
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel

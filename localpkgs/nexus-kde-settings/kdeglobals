@@ -1,0 +1,4 @@
+[General]
+XftAntialias=true
+XftHintStyle=hintslight
+XftSubPixel=none

@@ -1,0 +1,11 @@
+post_install() {
+    # Compile the Nexus dconf database so GTK-based desktop environments
+    # pick up the Nexus wallpaper as their default.
+    if [ -x /usr/bin/dconf ]; then
+        dconf update 2>/dev/null || true
+    fi
+}
+
+post_upgrade() {
+    post_install
+}

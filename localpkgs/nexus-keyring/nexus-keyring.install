@@ -1,0 +1,12 @@
+post_install() {
+    # Add the Nexus master key and mark it as trusted, so pacman verifies the
+    # signature of nexus-* packages and the nexus repository database.
+    if [ -x /usr/bin/pacman-key ]; then
+        pacman-key --add /usr/share/pacman/keyrings/nexus.gpg 2>/dev/null || true
+        pacman-key --lsign-key D7E66A16EB101E21ADC20D6315F9E61760540D3C 2>/dev/null || true
+    fi
+}
+
+post_upgrade() {
+    post_install
+}

@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "hello@nexuslinux.org",
+                "Name": "Nexus Linux Team"
+            }
+        ],
+        "Id": "nexus",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Nexus",
+        "Name[tr]": "Nexus",
+        "Version": "1.0"
+    },
+    "X-KDE-PlasmaImageWallpaper-AccentColor": "#0b0e16"
+}

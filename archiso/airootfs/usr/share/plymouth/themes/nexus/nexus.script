@@ -1,0 +1,77 @@
+# Nexus Linux boot splash script
+#
+# macOS-style boot animation: the white Nexus logo fades in and a thin
+# progress bar below it fills according to boot progress, all on a solid
+# dark background (no gradient).
+
+Window.SetBackgroundTopColor (0.043, 0.055, 0.086);
+Window.SetBackgroundBottomColor (0.043, 0.055, 0.086);
+
+# --- White logo, slightly scaled down ---
+logo_scale = 0.8;
+logo_image = Image ("nexus-white.png");
+logo_image = logo_image.Scale (Math.Int (logo_image.GetWidth () * logo_scale),
+                               Math.Int (logo_image.GetHeight () * logo_scale));
+logo_sprite = Sprite (logo_image);
+logo_sprite.SetZ (10);
+logo_sprite.SetOpacity (0.0);
+
+# --- macOS-style progress bar (track + fill) ---
+bar_w = 320;
+bar_h = 8;
+bar_track_image = Image ("bar-track.png");
+bar_fill_image = Image ("bar-fill.png");
+bar_track_sprite = Sprite (bar_track_image);
+bar_fill_sprite = Sprite (bar_fill_image);
+bar_track_sprite.SetZ (11);
+bar_fill_sprite.SetZ (12);
+bar_track_sprite.SetOpacity (0.0);
+bar_fill_sprite.SetOpacity (0.0);
+
+global.progress = 0.0;
+global.logo_fade = 0.0;
+global.last_fill = -1;
+
+fun refresh_callback () {
+    # Logo centered, nudged up to leave room for the progress bar.
+    logo_x = (Window.GetWidth () - logo_image.GetWidth ()) / 2;
+    logo_y = (Window.GetHeight () - logo_image.GetHeight ()) / 2 - 20;
+    logo_sprite.SetPosition (logo_x, logo_y, 10);
+
+    # macOS-style fade-in of the logo and the bar.
+    global.logo_fade += 0.03;
+    if (global.logo_fade > 1.0) {
+        global.logo_fade = 1.0;
+    }
+    logo_sprite.SetOpacity (global.logo_fade);
+    bar_track_sprite.SetOpacity (global.logo_fade);
+
+    # Progress bar below the logo; the fill grows with boot progress.
+    bar_x = (Window.GetWidth () - bar_w) / 2;
+    bar_y = logo_y + logo_image.GetHeight () + 30;
+    bar_track_sprite.SetPosition (bar_x, bar_y, 11);
+
+    fill_w = Math.Int (bar_w * global.progress);
+    if (fill_w > bar_w) {
+        fill_w = bar_w;
+    }
+    if (fill_w != global.last_fill) {
+        global.last_fill = fill_w;
+        if (fill_w > 0) {
+            bar_fill_sprite.SetImage (bar_fill_image.Scale (fill_w, bar_h));
+        }
+    }
+    if (fill_w > 0) {
+        bar_fill_sprite.SetPosition (bar_x, bar_y, 12);
+        bar_fill_sprite.SetOpacity (global.logo_fade);
+    } else {
+        bar_fill_sprite.SetOpacity (0.0);
+    }
+}
+
+fun progress_callback (duration, progress) {
+    global.progress = progress;
+}
+
+Plymouth.SetRefreshFunction (refresh_callback);
+Plymouth.SetBootProgressFunction (progress_callback);
