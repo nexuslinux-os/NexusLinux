@@ -1,4 +1,4 @@
-# CachyOS Calamares install
+# Nexus Linhx Calamares install
 
 # Language
 
@@ -10,12 +10,12 @@ text_console_gnu_grub="GNU GRUB"
 
 # Initial splash
 
-text_console_prompt_welcome="Welcome to CachyOS"
+text_console_prompt_welcome="Welcome to Nexus Linux! "
 text_console_prompt_login="localhost login"
 
 # Calamares Welcome
 
-text_calamares_welcome="Welcome to the CachyOS installer"
+text_calamares_welcome="Welcome to the Nexus Linux installer"
 
 # Calamares Language
 
