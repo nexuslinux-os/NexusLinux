@@ -8,7 +8,7 @@ main() {
     # Installing archlinux-keyring fails due not being correctly signed
     # Mitigate this by installing the latest archlinux-keyring on the ISO, before starting the installation
     # The issue could also happen, when the installation does rank the mirrors and then a "faulty" mirror gets used
-    sudo pacman -Sy --noconfirm archlinux-keyring cachyos-keyring
+    sudo pacman -Sy --noconfirm archlinux-keyring nexus-keyring
     # Also populate the keys, before starting the Installer, to avoid above issue
     sudo pacman-key --init
     for _ring in nexus cachyos; do
@@ -43,6 +43,7 @@ main() {
     sudo cp /usr/share/nexus-calamares/modules/shellprocess.conf /etc/calamares/modules/shellprocess.conf
     sudo cp /usr/share/nexus-calamares/modules/netinstall.yaml /etc/calamares/modules/netinstall.yaml
     sudo cp /usr/share/nexus-calamares/modules/packagechooser_desktop.conf /etc/calamares/modules/packagechooser_desktop.conf
+    sudo cp /usr/share/nexus-calamares/modules/unpackfs.conf /etc/calamares/modules/unpackfs.conf
     sudo sed -i 's/^branding: cachyos/branding: nexus/' /usr/share/calamares/settings_${mode}.conf
     sudo sed -i 's|branding: cachyos|branding: nexus|' /etc/calamares/settings.conf
     sudo sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/welcome_online.conf

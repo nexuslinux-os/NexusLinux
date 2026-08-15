@@ -38,14 +38,13 @@ sudo pacman -S --needed --noconfirm \
 echo "==> [3/5] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh
 
-# The fork swap wires nexus-* packages into netinstall.yaml and points the
-# [nexus] repo at GitHub Releases (no dedicated mirror). Publishing the local
-# repo first makes live installs work:
+# The fork swap wires nexus-* packages into netinstall.yaml (online path),
+# swaps them into packages*.x86_64 so the live squashfs bakes them in (offline
+# path), and points the [nexus] repo at GitHub Releases (no dedicated mirror).
+# Publishing the local repo first makes ONLINE installs work:
 #   ./build-nexus-repo.sh && ./release-nexus.sh repo
-# Swap is ON by default now that [nexus] is served from GitHub; set
-# NEXUS_SWAP=0 to keep the upstream cachyos-* packages instead.
-# NOTE: swap ON means netinstall resolves nexus-* packages over the network,
-# so an offline live install requires NEXUS_SWAP=0.
+# Swap is ON by default; set NEXUS_SWAP=0 to keep the upstream cachyos-*
+# packages instead. Offline installs need no network (packages are baked in).
 if [ "${NEXUS_SWAP:-1}" != "0" ]; then
     echo "==> [4/5] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP=1]"
     ./build-nexus-repo.sh --apply-swap

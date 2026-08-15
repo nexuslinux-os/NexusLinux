@@ -41,6 +41,10 @@ build() {
 
   export RUSTFLAGS="-Cembed-bitcode -C opt-level=3 -Ccodegen-units=1 -Clinker=clang -C link-arg=-flto -Clink-arg=-fuse-ld=/usr/bin/ld.lld"
 
+  # Use a pre-populated CPM source cache so the fmt/frozen/corrosion deps are
+  # not re-fetched from GitHub (previous builds stalled on that network fetch).
+  export CPM_SOURCE_CACHE="${startdir}/cpm-cache"
+
   cmake -S . -Bbuild \
         -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
@@ -60,6 +64,8 @@ package() {
   export RANLIB=llvm-ranlib
 
   export RUSTFLAGS="-Cembed-bitcode -C opt-level=3 -Ccodegen-units=1 -Clinker=clang -C link-arg=-flto -Clink-arg=-fuse-ld=/usr/bin/ld.lld"
+
+  export CPM_SOURCE_CACHE="${startdir}/cpm-cache"
 
   DESTDIR="${pkgdir}" cmake --build build --target install
 }
