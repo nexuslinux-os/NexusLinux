@@ -865,3 +865,39 @@
     - espeak-ng
     - mousetweaks
     - orca
+- name: "Enlightenment"
+  description: "Enlightenment (E) is a fast, light and modular window manager / desktop environment for X11 built on the EFL libraries."
+  description[tr]: "Enlightenment (E), EFL kütüphaneleri üzerine kurulu, hızlı, hafif ve modüler bir X11 masaüstü ortamıdır."
+  platform: "desktop"
+  hidden: false
+  selected: false
+  critical: true
+  packages:
+    - enlightenment
+    - terminology
+    - xorg-server
+    - xorg-xinit
+    - lightdm
+    - lightdm-gtk-greeter
+- name: "Sugar"
+  description: "Sugar is a learning platform designed for children aged 5 to 12, based on collaborative Activities."
+  description[tr]: "Sugar, 5-12 yaş arası çocuklar için tasarlanmış, işbirlikçi Aktiviteler üzerine kurulu bir öğrenme platformudur."
+  platform: "desktop"
+  hidden: false
+  selected: false
+  critical: true
+  packages:
+    - sugar
+    - sugar-fructose
+    - lightdm
+    - lightdm-gtk-greeter
+- name: "Phosh"
+  description: "Phosh is a pure Wayland shell for GNOME on mobile devices, based on phoc."
+  description[tr]: "Phosh, mobil cihazlar için phoc tabanlı, GNOME teknolojilerini kullanan saf bir Wayland kabuğudur."
+  platform: "desktop"
+  hidden: false
+  selected: false
+  critical: true
+  packages:
+    - phosh
+    - phosh-mobile-settings
