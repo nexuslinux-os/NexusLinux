@@ -123,7 +123,7 @@ publish_iso() {
         --notes "$notes" \
         "$iso" "$iso.sig" "$(dirname "$iso")/SHA256SUMS" \
         "$(dirname "$iso")/$base.img" "$(dirname "$iso")/pkgs.txt"
-    echo "==> Bitti: https://github.com/$GIT_REPO/releases/tag/$tag"
+    echo "==> Finished: https://github.com/$GIT_REPO/releases/tag/$tag"
 }
 
 case "${1:-}" in
