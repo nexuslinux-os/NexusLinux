@@ -21,6 +21,14 @@ localpkgs/*/pkg/
 localpkgs/*/src/
 localpkgs/nexus-settings/CachyOS-Settings/
 localpkgs/nexus-calamares/calamares/
+localpkgs/nexus-handheld/CachyOS-Handheld/
+localpkgs/nexus-kernel-manager/kernel-manager/
+localpkgs/nexus-kernel-manager/cpm-cache/
+localpkgs/nexus-mangowc-dms/cachyos-mangowc-dms/
+localpkgs/nexus-mangowc-dms/cat-dms/
+localpkgs/nexus-micro-settings/cachyos-micro-settings/
+localpkgs/nexus-packageinstaller/packageinstaller/
+localpkgs/nexus-zsh-config/cachyos-zsh-config/
 **/src/
 **/pkg/
 
