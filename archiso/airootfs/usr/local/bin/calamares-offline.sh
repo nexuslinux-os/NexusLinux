@@ -25,7 +25,8 @@ main() {
     sudo cp /usr/share/nexus-calamares/modules/netinstall.yaml /etc/calamares/modules/netinstall.yaml
     sudo cp /usr/share/nexus-calamares/modules/packagechooser_desktop.conf /etc/calamares/modules/packagechooser_desktop.conf
     sudo cp /usr/share/nexus-calamares/modules/unpackfs.conf /etc/calamares/modules/unpackfs.conf
-    sudo sed -i 's/^branding: cachyos/branding: nexus/' /usr/share/calamares/settings_${mode}.conf
+    # Nexus offline settings: adds the bootloader + desktop choosers and the
+    # netinstall module to the CachyOS offline sequence (see settings_offline.conf).
     sudo sed -i 's|branding: cachyos|branding: nexus|' /etc/calamares/settings.conf
     sudo sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/welcome.conf
     sudo sed -i 's/cachyos-${cpu}/nexus-${cpu}/' /etc/calamares/modules/users.conf
@@ -40,7 +41,7 @@ main() {
 ########## System: $SYSTEM
 EOF
 
-    sudo cp "/usr/share/calamares/settings_${mode}.conf" /etc/calamares/settings.conf
+    sudo cp "/usr/share/nexus-calamares/modules/settings_${mode}.conf" /etc/calamares/settings.conf
     exec pkexec-wrapper calamares -D6 >> $log
 }
 
