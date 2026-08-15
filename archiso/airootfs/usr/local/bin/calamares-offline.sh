@@ -24,6 +24,7 @@ main() {
     sudo cp /usr/share/nexus-calamares/modules/shellprocess.conf /etc/calamares/modules/shellprocess.conf
     sudo cp /usr/share/nexus-calamares/modules/netinstall.yaml /etc/calamares/modules/netinstall.yaml
     sudo cp /usr/share/nexus-calamares/modules/packagechooser_desktop.conf /etc/calamares/modules/packagechooser_desktop.conf
+    sudo cp /usr/share/nexus-calamares/modules/partition.conf /etc/calamares/modules/partition.conf
     sudo cp /usr/share/nexus-calamares/modules/unpackfs.conf /etc/calamares/modules/unpackfs.conf
     # Nexus offline settings: adds the bootloader + desktop choosers and the
     # netinstall module to the CachyOS offline sequence (see settings_offline.conf).
