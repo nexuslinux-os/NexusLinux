@@ -15,13 +15,13 @@ done
 # Bake Nexus branding into Calamares at build time so even a manual `calamares`
 # launch (not going through the launch scripts) shows Nexus, not CachyOS:
 # - branding directory
-# - /etc/calamares/settings.conf from the offline (normal install) flow
+# - /etc/calamares/settings.conf from the online (normal install) flow
 # - welcome/users module strings patched to Nexus
 if [ -d /usr/share/nexus-calamares/branding/nexus ]; then
     cp -r /usr/share/nexus-calamares/branding/nexus /usr/share/calamares/branding/nexus
 fi
-if [ -f /usr/share/calamares/settings_offline.conf ]; then
-    install -Dm644 /usr/share/calamares/settings_offline.conf /etc/calamares/settings.conf
+if [ -f /usr/share/calamares/settings_online.conf ]; then
+    install -Dm644 /usr/share/calamares/settings_online.conf /etc/calamares/settings.conf
 fi
 sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/welcome.conf
 sed -i 's/cachyos-${cpu}/nexus-${cpu}/' /etc/calamares/modules/users.conf
