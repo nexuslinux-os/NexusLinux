@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: ShellCheck all shell scripts
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: pacman --noconfirm -Sy shellcheck
+      - name: Run ShellCheck
+        run: |
+          set -e
+          mapfile -t SCRIPTS < <(git ls-files -- '*.sh' '*.bash')
+          if [ ${#SCRIPTS[@]} -eq 0 ]; then
+            echo "No shell scripts tracked"; exit 0
+          fi
+          # shellcheck disable=SC2016
+          shellcheck --shell=bash --severity=warning "${SCRIPTS[@]}"
+
+  verify-sources:
+    name: Verify package sources
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build tooling
+        run: pacman --noconfirm -Sy base-devel
+      - name: makepkg --verifysource
+        run: |
+          set -e
+          for pkg in localpkgs/*/; do
+            [ -f "$pkg/PKGBUILD" ] || continue
+            name="$(basename "$pkg")"
+            echo "==> verifysource: $name"
+            ( cd "$pkg" && timeout 1800 makepkg --verifysource --nodeps >/dev/null )
+          done
+
+  build-iso:
+    name: Build ISO (manual / tag only)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        # Mirrors build-nexus-iso.sh step [2/6] (build deps of the fork
+        # packages + archiso tooling).
+        run: pacman --noconfirm -Sy \
+            base-devel git meson cargo clang lld llvm \
+            glib2 gtk3 pciutils procps-ng libusb \
+            boost boost-libs ckbcomp cryptsetup dmidecode gptfdisk hwinfo \
+            kconfig kcoreaddons kcrash ki18n kparts kpmcore kservice kwidgetsaddons \
+            libpwquality mkinitcpio-openswap networkmanager polkit-qt6 python \
+            qt6-declarative qt6-svg rsync solid squashfs-tools upower yaml-cpp \
+            qt6-imageformats python-toml \
+            cmake doxygen extra-cmake-modules ninja \
+            python-jsonschema python-pyaml python-unidecode qt6-tools \
+            zram-generator ananicy-cpp cachyos-ananicy-rules inxi systemd iw wireless-regdb \
+            bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
+            pkgfile tealdeer ttf-fantasque-nerd \
+            archiso mkinitcpio-archiso sudo gnupg
+      - name: Restore Nexus signing key from secret
+        run: |
+          : "${NEXUS_KEY_ASC:?set NEXUS_KEY_ASC (base64 of nexus-master-key.asc) and NEXUS_KEY_PASSPHRASE secrets to sign the ISO}"
+          mkdir -p localpkgs/nexus-keyring/gnupg/private-keys-v1.d localpkgs/nexus-keyring/gnupg/openpgp-revocs.d
+          chmod 700 localpkgs/nexus-keyring/gnupg
+          echo "$NEXUS_KEY_ASC" | base64 --decode > localpkgs/nexus-keyring/gnupg/nexus-master-key.asc
+          gpg --homedir localpkgs/nexus-keyring/gnupg --batch --import localpkgs/nexus-keyring/gnupg/nexus-master-key.asc
+        env:
+          NEXUS_KEY_ASC: ${{ secrets.NEXUS_KEY_ASC }}
+      - name: Build Nexus ISO
+        # build-nexus-repo.sh resolves GNUPGHOME itself (defaults to
+        # localpkgs/nexus-keyring/gnupg, where the restore step imported the
+        # key) and reads NEXUS_KEY_PASSPHRASE to unlock it non-interactively.
+        run: ./build-nexus-iso.sh desktop
+        env:
+          NEXUS_KEY_PASSPHRASE: ${{ secrets.NEXUS_KEY_PASSPHRASE }}
+          NEXUS_GPGKEY: ${{ secrets.NEXUS_GPGKEY }}
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-linux-iso
+          path: out/**/*.iso
+          if-no-files-found: error

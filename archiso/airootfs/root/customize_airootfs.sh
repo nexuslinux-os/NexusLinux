@@ -58,45 +58,6 @@ for _skel in /etc/skel /home/liveuser; do
     rm -f "$_skel/.config/dconf/user"
 done
 
-# The Calamares keyboard module reads /usr/share/X11/xkb/rules/base.lst at
-# runtime and offers every layout/variant listed there. Remove the Kurdish
-# (Kurdish) variants so Kurdish no longer appears in the installer's keyboard
-# options. The rules files are owned by the xkeyboard-config package, so they
-# must be patched here (after pacstrap), not shipped in the profile airootfs.
-for _rules in base.lst evdev.lst; do
-    _rules="/usr/share/X11/xkb/rules/$_rules"
-    if [ -f "$_rules" ]; then
-        sed -i '/^  ku[ _]/d' "$_rules"
-    fi
-done
-
-# Same for the XML rules files, which KDE's keyboard settings reads. Parsed
-# with a real XML parser (not regex) so nested/oddly formatted blocks are safe.
-for _rules in base.xml evdev.xml; do
-    _rules="/usr/share/X11/xkb/rules/$_rules"
-    if [ -f "$_rules" ]; then
-        python3 - "$_rules" <<'PYEOF'
-import sys
-import xml.etree.ElementTree as ET
-
-path = sys.argv[1]
-tree = ET.parse(path)
-root = tree.getroot()
-removed = 0
-# Remove <variant> blocks whose <name> is a Kurdish variant (ku, ku_alt, ku_f, ku_ara)
-for vlist in root.iter('variantList'):
-    for variant in list(vlist):
-        name = variant.findtext('configItem/name') or ''
-        if name == 'ku' or name.startswith('ku_'):
-            vlist.remove(variant)
-            removed += 1
-tree.write(path, encoding='utf-8', xml_declaration=True)
-if removed:
-    print(f"removed {removed} Kurdish variant(s) from {path}")
-PYEOF
-    fi
-done
-
 # The cachyos-branding os-release hook writes "CachyOS" into /etc/os-release during
 # pacstrap. Overwrite it so the live session identifies as Nexus Linux. Preserve the
 # IMAGE_ID/IMAGE_VERSION lines appended by mkarchiso.
