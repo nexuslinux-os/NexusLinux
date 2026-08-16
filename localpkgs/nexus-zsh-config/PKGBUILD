@@ -35,6 +35,10 @@ validpgpkeys=(
 
 package() {
     cd "$srcdir/cachyos-zsh-config"
-    install -D -m644 cachyos-config.zsh "$pkgdir/usr/share/nexus-zsh-config/cachyos-config.zsh"
+    # The upstream zshrc sources /usr/share/cachyos-zsh-config/cachyos-config.zsh;
+    # cachyos-zsh-config is conflicted out, so rewrite that reference to the
+    # Nexus path and rename the file accordingly.
+    sed -i 's|/usr/share/cachyos-zsh-config/cachyos-config.zsh|/usr/share/nexus-zsh-config/nexus-config.zsh|' zshrc
+    install -D -m644 cachyos-config.zsh "$pkgdir/usr/share/nexus-zsh-config/nexus-config.zsh"
     install -D -m644 zshrc "$pkgdir/etc/skel/.zshrc"
 }

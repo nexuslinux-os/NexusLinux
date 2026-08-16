@@ -29,28 +29,33 @@ done
 }
 
 _try_v3() {
-    /lib/ld-linux-x86-64.so.2 --help | grep "x86-64-v3 (supported, searched)" > /dev/null
-
     local pacman_conf="/etc/pacman.conf"
     local pacman_conf_cachyos="/etc/pacman-more.conf"
     local pacman_conf_path_backup="/etc/pacman.conf.bak"
 
-    if [ $? -eq 0 ]; then
+    # `grep` inside an if: a `local` assignment right after the pipeline would
+    # reset $?, so check the flag directly instead of via a later $? read.
+    if /lib/ld-linux-x86-64.so.2 --help | grep -q "x86-64-v3 (supported, searched)"; then
         echo "x86-64-v3 is supported"
 
-        sed -i 's/Architecture = auto/#Architecture = auto/' $pacman_conf_cachyos
-        sed -i 's/#<disabled_v3>//g' $pacman_conf_cachyos
+        sed -i 's/Architecture = auto/#Architecture = auto/' "$pacman_conf_cachyos"
+        sed -i 's/#<disabled_v3>//g' "$pacman_conf_cachyos"
 
-        echo "backup old config"
-        mv $pacman_conf $pacman_conf_path_backup
+        # Only swap the configs when the v3 overlay actually exists, otherwise
+        # /etc/pacman.conf would be moved away and never replaced.
+        if [ -f "$pacman_conf_cachyos" ]; then
+            echo "backup old config"
+            mv "$pacman_conf" "$pacman_conf_path_backup"
 
-        echo "Nexus -v3 Repo changed"
-        mv $pacman_conf_cachyos $pacman_conf
+            echo "Nexus -v3 Repo changed"
+            mv "$pacman_conf_cachyos" "$pacman_conf"
+        else
+            echo "UYARI: $pacman_conf_cachyos bulunamadi, v3 repo degistirilmedi"
+        fi
 
     else
         echo "x86-64-v3 is not supported"
     fi
-
 }
 
 _clean_packages

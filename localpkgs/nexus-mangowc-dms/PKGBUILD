@@ -41,6 +41,10 @@ prepare() {
   cd "${srcdir}/cachyos-mangowc-dms"
 
   git submodule init
+  # Point the catWidget submodule at the local copy of cat-dms (file:// URL).
+  # `-c protocol.file.allow=always` is scoped to this single git invocation
+  # only (git 2.44+ blocks file:// submodules by default); it does not touch
+  # the user's or repository's git config.
   git config submodule.etc/skel/.config/DankMaterialShell/plugins/catWidget.url "${srcdir}/cat-dms"
   git -c protocol.file.allow=always submodule update
 }

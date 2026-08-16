@@ -26,15 +26,16 @@ depends=(
   ttf-fantasque-nerd
 )
 source=(
+    'conf.d/done.fish'
     'nexus-config.fish'
     'config.fish'
 )
-sha512sums=('SKIP' 'SKIP')
+sha512sums=('SKIP' 'SKIP' 'SKIP')
 
 package() {
-    # done.fish is copied from the build dir directly: subdirectory file
-    # sources are flattened to their basename by makepkg and not found.
-    install -Dm644 "$startdir/conf.d/done.fish" $pkgdir/usr/share/nexus-fish-config/conf.d/done.fish
+    # makepkg flattens subdirectory sources to their basename in $srcdir, so
+    # conf.d/done.fish lands as $srcdir/done.fish.
+    install -Dm644 "$srcdir/done.fish" $pkgdir/usr/share/nexus-fish-config/conf.d/done.fish
     install -Dm644 nexus-config.fish $pkgdir/usr/share/nexus-fish-config/nexus-config.fish
     install -Dm644 config.fish $pkgdir/etc/skel/.config/fish/config.fish
 }

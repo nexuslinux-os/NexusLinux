@@ -8,7 +8,7 @@ pkgver=1.0.1
 pkgrel=1
 arch=('any')
 url="https://github.com/nexuslinux/nexuslinux"
-license=('GPL')
+license=('GPL-3.0-only')
 conflicts=('cachyos-micro-settings')
 provides=('cachyos-micro-settings')
 source=("git+https://github.com/cachyos/cachyos-micro-settings.git#commit=e0ef3687345448b159f344edde0dc47b2f2f042f")

@@ -113,17 +113,18 @@ generate_edition_tag() {
 }
 
 modify_mkarchiso() {
-    local _is_hack_applied="$(grep -q 'archlinux-keyring-wkd-sync.timer' /usr/bin/mkarchiso; echo $?)"
-    if [ $_is_hack_applied -ne 0 ]; then
+    # Both patches touch the host's /usr/bin/mkarchiso. They are applied
+    # in-place on the build host because the ISO build uses the host copy of
+    # mkarchiso (via buildiso.sh) and there is no profile-level hook for these
+    # two fixes. Each patch is idempotent: it is skipped when already applied.
+    if ! grep -q 'archlinux-keyring-wkd-sync.timer' /usr/bin/mkarchiso; then
         msg "Patching mkarchiso with disabled arch keyrings timer..."
-
         sudo sed 's/_run_once _make_customize_airootfs/_run_once _make_customize_airootfs\n\trm -f "${pacstrap_dir}\/usr\/lib\/systemd\/system\/timers.target.wants\/archlinux-keyring-wkd-sync.timer"\n/' -i /usr/bin/mkarchiso
     else
         msg "mkarchiso is already patched!"
     fi
 
-    local _is_overwrite_applied="$(grep -q 'overwrite' /usr/bin/mkarchiso; echo $?)"
-    if [ $_is_overwrite_applied -ne 0 ]; then
+    if ! grep -q 'overwrite' /usr/bin/mkarchiso; then
         msg "Patching mkarchiso to use --overwrite in pacstrap..."
         sudo sed -i 's/"${buildmode_pkg_list\[@\]}")/"${buildmode_pkg_list[@]}" "--overwrite" "*")/g' /usr/bin/mkarchiso
     fi
