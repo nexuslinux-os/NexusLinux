@@ -43,6 +43,18 @@ sudo pacman -S --needed --noconfirm \
 echo "==> [3/6] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh
 
+# Fork packages are rebuilt on every run (same version, new content), but
+# mkarchiso's pacstrap shares the host cache (/var/cache/pacman/pkg). A stale
+# nexus-*.pkg.tar.zst left there by a previous build would fail the checksum
+# check against the freshly regenerated repo db ("invalid or corrupted package
+# (checksum)"). Drop them so pacstrap re-copies the current files from the
+# file:// local repo.
+if ls /var/cache/pacman/pkg/nexus-*.pkg.tar.zst >/dev/null 2>&1; then
+    sudo rm -f /var/cache/pacman/pkg/nexus-*.pkg.tar.zst \
+               /var/cache/pacman/pkg/nexus-*.pkg.tar.zst.sig
+    echo "    -> temizlendi: /var/cache/pacman/pkg/nexus-*.pkg.tar.zst (stale cache)"
+fi
+
 # The fork swap wires nexus-* packages into netinstall.yaml (online path),
 # swaps them into packages*.x86_64 so the live squashfs bakes them in (offline
 # path), and points the [nexus] repo at GitHub Releases (no dedicated mirror).
