@@ -51,6 +51,27 @@ trap 'rm -f "$PASSPHRASE_FILE" "$BATCH_FILE"' EXIT
 
 echo "==> Generating Nexus signing key ($KEY_NAME <$KEY_EMAIL>)"
 
+# Drop any pre-existing Nexus master key (same UID) so the generated keyring,
+# nexus.gpg and the reported fingerprint stay unambiguous. gpg allows multiple
+# keys with the same UID; without this, `--export $KEY_EMAIL` and the
+# fingerprint lookup would pick up stale keys.
+# NOTE: --delete-secret-keys in batch mode rejects a UID/email ("bu, toplu iş
+# kipinde yapılamaz") and requires the keygrip/fingerprint, so delete by
+# fingerprint. Deleting does not need the key's passphrase.
+_existing_fps="$(gpg --homedir "$GPG_KEYRING" --batch --with-colons --list-secret-keys "$KEY_EMAIL" 2>/dev/null \
+    | awk -F: '/^fpr/ {print $10}')"
+if [ -n "$_existing_fps" ]; then
+    echo "  removing existing key(s): $(echo "$_existing_fps" | tr '\n' ' ')"
+    for _fp in $_existing_fps; do
+        gpg --homedir "$GPG_KEYRING" --batch --yes --delete-secret-keys "$_fp" \
+            || { echo "ERROR: $_fp gizli anahtari silinemedi" >&2; exit 1; }
+        gpg --homedir "$GPG_KEYRING" --batch --yes --delete-keys "$_fp" 2>/dev/null || true
+    done
+    unset _fp
+    rm -f nexus.gpg nexus-trusted nexus-revoked
+fi
+unset _existing_fps
+
 if gpg --homedir "$GPG_KEYRING" --batch --pinentry-mode loopback \
     --passphrase-file "$PASSPHRASE_FILE" --quick-generate-key \
     "$KEY_NAME <$KEY_EMAIL>" rsa4096 sign "$KEY_EXPIRE" 2>/dev/null; then
@@ -66,7 +87,7 @@ else
         --gen-key "$BATCH_FILE" 2>/dev/null
 fi
 
-FP="$(gpg --homedir "$GPG_KEYRING" --with-colons --list-secret-keys "$KEY_EMAIL" | awk -F: '/^fpr/ {print $10; exit}')"
+FP="$(gpg --homedir "$GPG_KEYRING" --with-colons --list-secret-keys "$KEY_EMAIL" | awk -F: '/^fpr/ {fp=$10} END {print fp}')"
 if [ -z "$FP" ]; then
     echo "ERROR: failed to read the generated key fingerprint" >&2
     exit 1
