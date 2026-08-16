@@ -70,24 +70,29 @@ for _rules in base.lst evdev.lst; do
     fi
 done
 
-# Same for the XML rules files, which KDE's keyboard settings reads.
+# Same for the XML rules files, which KDE's keyboard settings reads. Parsed
+# with a real XML parser (not regex) so nested/oddly formatted blocks are safe.
 for _rules in base.xml evdev.xml; do
     _rules="/usr/share/X11/xkb/rules/$_rules"
     if [ -f "$_rules" ]; then
         python3 - "$_rules" <<'PYEOF'
-import re, sys
+import sys
+import xml.etree.ElementTree as ET
+
 path = sys.argv[1]
-with open(path, encoding='utf-8') as f:
-    data = f.read()
+tree = ET.parse(path)
+root = tree.getroot()
+removed = 0
 # Remove <variant> blocks whose <name> is a Kurdish variant (ku, ku_alt, ku_f, ku_ara)
-data = re.sub(
-    r'\s*<variant>\s*<configItem>\s*<name>ku(?:_\w+)?</name>.*?</variant>',
-    '',
-    data,
-    flags=re.S,
-)
-with open(path, 'w', encoding='utf-8') as f:
-    f.write(data)
+for vlist in root.iter('variantList'):
+    for variant in list(vlist):
+        name = variant.findtext('configItem/name') or ''
+        if name == 'ku' or name.startswith('ku_'):
+            vlist.remove(variant)
+            removed += 1
+tree.write(path, encoding='utf-8', xml_declaration=True)
+if removed:
+    print(f"removed {removed} Kurdish variant(s) from {path}")
 PYEOF
     fi
 done

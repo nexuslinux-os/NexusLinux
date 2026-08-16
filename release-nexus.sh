@@ -89,9 +89,6 @@ publish_iso() {
     work="$(mktemp -d)"
     trap 'rm -rf "$work"' RETURN
 
-    local base
-    base="$(basename "$iso")"
-    base="${base%.iso}"
     echo "==> ISO artefaktlari: $iso"
 
     # Signing + checksums next to the ISO itself.
@@ -99,8 +96,7 @@ publish_iso() {
         || gpg --batch --yes --detach-sign --output "$iso.sig" "$iso"
     ( cd "$(dirname "$iso")" && sha256sum "$(basename "$iso")" > "$(dirname "$iso")/SHA256SUMS" )
 
-    # Hybrid ISO doubles as a dd-able USB image.
-    cp -f "$iso" "$(dirname "$iso")/$base.img"
+    # The ISO is already hybrid/dd-able, so no separate .img copy is published.
 
     # pkgs.txt: profile packages + netinstall selection, sorted, deduped.
     {
@@ -115,14 +111,14 @@ publish_iso() {
 
     ISO:        $(basename "$iso")
     SHA256:     $(cd "$(dirname "$iso")" && awk '{print $1}' SHA256SUMS)
-    USB yazma:  sudo dd if=$base.img of=/dev/sdX bs=4M status=progress conv=fsync"
+    USB yazma:  sudo dd if=$(basename "$iso") of=/dev/sdX bs=4M status=progress conv=fsync"
     echo "==> Yeni release: $tag"
     gh release create "$tag" \
         --repo "$GIT_REPO" \
         --title "Nexus Linux $tag" \
         --notes "$notes" \
         "$iso" "$iso.sig" "$(dirname "$iso")/SHA256SUMS" \
-        "$(dirname "$iso")/$base.img" "$(dirname "$iso")/pkgs.txt"
+        "$(dirname "$iso")/pkgs.txt"
     echo "==> Finished: https://github.com/$GIT_REPO/releases/tag/$tag"
 }
 

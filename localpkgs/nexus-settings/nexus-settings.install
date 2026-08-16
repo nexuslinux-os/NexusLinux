@@ -25,7 +25,7 @@ post_install() {
     for service in "${SERVICES[@]}"; do
         systemctl enable "$service"
     done
-    if command -v iw >/dev/null 2>&1; then
+    if command -v iw >/dev/null 2>&1 && [ -f /usr/lib/systemd/system/cachyos-iw-set-regdomain.path ]; then
         systemctl enable cachyos-iw-set-regdomain.path
     fi
 }

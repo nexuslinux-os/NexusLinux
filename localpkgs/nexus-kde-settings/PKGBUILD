@@ -11,6 +11,7 @@ arch=('any')
 url='https://nexuslinux.org'
 license=(GPL-3.0-or-later)
 conflicts=('cachyos-kde-settings')
+provides=('cachyos-kde-settings')
 depends=('nexus-wallpapers')
 source=(
     'kdeglobals'

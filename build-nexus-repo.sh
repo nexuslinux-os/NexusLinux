@@ -38,12 +38,18 @@ export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 # or the PGP check fails with "bilinmeyen kamu anahtari". The same applies to
 # nexus-zsh-config, nexus-kernel-manager, nexus-packageinstaller (Vladislav)
 # and nexus-handheld (Peter, Vladislav, Eric).
-gpg --batch --no-tty --recv-keys \
-    E8B9AA39F054E30E8290D492C3C4820857F654FE \
-    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 \
-    E18447AC260021D31F3FF6C4C8A2A4774B8B63C4 2>/dev/null || true
-gpg --batch --no-tty --list-keys C3C4820857F654FE >/dev/null 2>&1 \
-    || echo "UYARI: CachyOS imza anahtari Nexus keyring'e alinamadi (nexus-settings PGP dogrulamasi basarisiz olabilir)" >&2
+# Fetch each upstream signing key into $GNUPGHOME and surface failures instead
+# of swallowing them: a missing key silently breaks the PGP verification of the
+# signed sources below, so each failure is reported loudly.
+_UPSTREAM_KEYS=(
+    E8B9AA39F054E30E8290D492C3C4820857F654FE  # Peter Jung (CachyOS)
+    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9  # Vladislav Nepogodin
+    E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # (nexus-packageinstaller / handheld)
+)
+for _key in "${_UPSTREAM_KEYS[@]}"; do
+    gpg --batch --no-tty --recv-keys "$_key" >/dev/null 2>&1 \
+        || echo "UYARI: PGP anahtari alinamadi: $_key (signed source dogrulamasi basarisiz olabilir)" >&2
+done
 
 mkdir -p "$REPO"
 : > "$REPO/.build-nexus-repo.log"

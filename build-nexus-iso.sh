@@ -7,6 +7,7 @@
 #
 # Default profile: "desktop". Requires makepkg + mkarchiso on the host.
 set -e
+set -o pipefail
 
 cd "$(dirname "$0")"
 ROOT="$(pwd)"
@@ -16,10 +17,10 @@ for dep in makepkg mkarchiso repo-add gpg; do
     command -v "$dep" >/dev/null 2>&1 || { echo "HATA: eksik bağımlılık: $dep" >&2; exit 1; }
 done
 
-echo "==> [1/4] Upstream PGP keys (nexus-settings signed source)"
+echo "==> [1/6] Upstream PGP keys (nexus-settings signed source)"
 gpg --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 2>/dev/null || true
 
-echo "==> [2/5] Installing build dependencies (tek seferlik sudo sifresi istenecek)"
+echo "==> [2/6] Installing build dependencies (tek seferlik sudo sifresi istenecek)"
 # All depends/makedepends of the fork packages, so makepkg never needs syncdeps.
 sudo pacman -S --needed --noconfirm \
     base-devel git meson cargo clang lld llvm \
@@ -35,7 +36,7 @@ sudo pacman -S --needed --noconfirm \
     bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
     pkgfile tealdeer ttf-fantasque-nerd
 
-echo "==> [3/5] Building Nexus fork packages + local repo"
+echo "==> [3/6] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh
 
 # The fork swap wires nexus-* packages into netinstall.yaml (online path),
@@ -46,13 +47,13 @@ echo "==> [3/5] Building Nexus fork packages + local repo"
 # Swap is ON by default; set NEXUS_SWAP=0 to keep the upstream cachyos-*
 # packages instead. Offline installs need no network (packages are baked in).
 if [ "${NEXUS_SWAP:-1}" != "0" ]; then
-    echo "==> [4/5] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP=1]"
+    echo "==> [4/6] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP=1]"
     ./build-nexus-repo.sh --apply-swap
 else
-    echo "==> [4/5] Skipping fork swap (upstream cachyos-* packages in the ISO) [NEXUS_SWAP=0]."
+    echo "==> [4/6] Skipping fork swap (upstream cachyos-* packages in the ISO) [NEXUS_SWAP=0]."
 fi
 
-echo "==> [5/5] Building ISO (profile: $PROFILE)"
+echo "==> [5/6] Building ISO (profile: $PROFILE)"
 # cachyos-calamares-next owns /etc/calamares/modules/netinstall.yaml and
 # packagechooser_desktop.conf, so any copies in the profile airootfs make
 # pacstrap abort with a file conflict. The Nexus versions live at the
@@ -71,7 +72,7 @@ done
 ./buildiso.sh -p "$PROFILE" -v 2>&1 | tee "$ROOT/build.log"
 
 echo "==> [6/6] Release artefaktlari (.sig / SHA256SUMS / .img / pkgs.txt)"
-ISO_PATH="$(ls "$ROOT"/out/"$PROFILE"/*.iso 2>/dev/null | head -n1 || true)"
+ISO_PATH="$(find "$ROOT/out/$PROFILE" -maxdepth 1 -name '*.iso' -print -quit 2>/dev/null)"
 if [ -n "$ISO_PATH" ]; then
     # Sign the ISO with the Nexus master key (same keyring as the packages).
     if [ -f "$ROOT/localpkgs/nexus-keyring/gnupg/secring.gpg" ] || \
