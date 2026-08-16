@@ -20,7 +20,7 @@ ROOT="$(pwd)"
 REPO="$ROOT/localpkgs/repo"
 GIT_REPO="${NEXUS_GIT_REPO:-nexuslinux/nexuslinux}"
 TAG_PREFIX="${NEXUS_TAG_PREFIX:-nexus-v}"
-export GPGKEY="${NEXUS_GPGKEY:-D7E66A16EB101E21ADC20D6315F9E61760540D3C}"
+export GPGKEY="${NEXUS_GPGKEY:-F4C57604C90E90CD6AB3633F2AA4846E14CBE512}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 
 for dep in gh gpg repo-add; do
