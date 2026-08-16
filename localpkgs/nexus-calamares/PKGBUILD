@@ -68,6 +68,20 @@ prepare() {
     sed -i -e "s|CALAMARES_VERSION_RC 1|CALAMARES_VERSION_RC 0|g" CMakeLists.txt
     # Apply Nexus branding to the shipped settings files.
     sed -i 's|^branding: cachyos$|branding: nexus|' settings_online.conf settings_offline.conf settings.conf
+    # The Nexus fork swaps cachyos-* packages for nexus-* equivalents that are
+    # baked into the live squashfs (packages*.x86_64 swap). The upstream
+    # installer scripts still try to (re)install the old cachyos-* packages at
+    # install time, which now CONFLICT with the baked-in nexus-* ones and also
+    # depend on the [nexus] repo that is only published to GitHub Releases
+    # later. Drop those package installs and run the forked binaries directly.
+    # Calamares captures stdout only (stderr is dropped), so mirror stderr into
+    # stdout like create-pacman-keyring does.
+    sed -i '1a exec 2>&1' src/scripts/update-mirrorlist
+    sed -i \
+        -e 's/sudo pacman -Sy --noconfirm --needed cachyos-rate-mirrors rate-mirrors/sudo pacman -Sy --noconfirm --needed rate-mirrors/' \
+        -e 's/sudo cachyos-rate-mirrors/sudo nexus-rate-mirrors/' \
+        src/scripts/update-mirrorlist
+    sed -i '/cachyos-keyring/d' src/scripts/create-pacman-keyring
 }
 
 build() {
