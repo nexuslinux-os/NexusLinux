@@ -113,17 +113,15 @@ generate_edition_tag() {
 }
 
 modify_mkarchiso() {
-    # Both patches touch the host's /usr/bin/mkarchiso. They are applied
-    # in-place on the build host because the ISO build uses the host copy of
-    # mkarchiso (via buildiso.sh) and there is no profile-level hook for these
-    # two fixes. Each patch is idempotent: it is skipped when already applied.
-    if ! grep -q 'archlinux-keyring-wkd-sync.timer' /usr/bin/mkarchiso; then
-        msg "Patching mkarchiso with disabled arch keyrings timer..."
-        sudo sed 's/_run_once _make_customize_airootfs/_run_once _make_customize_airootfs\n\trm -f "${pacstrap_dir}\/usr\/lib\/systemd\/system\/timers.target.wants\/archlinux-keyring-wkd-sync.timer"\n/' -i /usr/bin/mkarchiso
-    else
-        msg "mkarchiso is already patched!"
-    fi
-
+    # archlinux-keyring's WKD-sync timer is disabled via a mask file in the
+    # profile airootfs (see prepare_profile), so no patch is needed for it.
+    # The only remaining patch adds `--overwrite "*"` to the pacstrap call:
+    # mkarchiso copies the profile airootfs into the rootfs BEFORE pacstrap
+    # runs, so files owned by packages (e.g. /etc/passwd, /etc/skel/*) already
+    # exist and pacstrap would abort on the conflict without --overwrite.
+    # There is no profile-level hook for pacstrap options, so the host's
+    # /usr/bin/mkarchiso is patched in-place. The patch is idempotent and only
+    # applied when not already present.
     if ! grep -q 'overwrite' /usr/bin/mkarchiso; then
         msg "Patching mkarchiso to use --overwrite in pacstrap..."
         sudo sed -i 's/"${buildmode_pkg_list\[@\]}")/"${buildmode_pkg_list[@]}" "--overwrite" "*")/g' /usr/bin/mkarchiso
@@ -143,6 +141,9 @@ prepare_profile(){
 
     # mask cachyos-rate-mirrors timer
     ln -sf /dev/null ${src_dir}/archiso/airootfs/etc/systemd/system/cachyos-rate-mirrors.timer
+    # mask the archlinux-keyring WKD-sync timer the same way (replaces the old
+    # mkarchiso patch); a masked unit never starts even if enabled by pacstrap
+    ln -sf /dev/null ${src_dir}/archiso/airootfs/etc/systemd/system/archlinux-keyring-wkd-sync.timer
 
     generate_motd
 

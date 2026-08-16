@@ -18,7 +18,11 @@ for dep in makepkg mkarchiso repo-add gpg; do
 done
 
 echo "==> [1/6] Upstream PGP keys (nexus-settings signed source)"
-gpg --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 2>/dev/null || true
+# Fetch into the Nexus keyring (same GNUPGHOME as build-nexus-repo.sh), never
+# the host's ~/.gnupg. If this fails, step [3/6] re-fetches and warns per key.
+GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}" gpg --batch --no-tty \
+    --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9 2>/dev/null \
+    || echo "UYARI: PGP anahtarlari alinamadi (build-nexus-repo.sh adiminda tekrar denenir)" >&2
 
 echo "==> [2/6] Installing build dependencies (tek seferlik sudo sifresi istenecek)"
 # All depends/makedepends of the fork packages, so makepkg never needs syncdeps.
