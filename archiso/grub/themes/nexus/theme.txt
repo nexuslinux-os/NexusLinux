@@ -1,0 +1,45 @@
+# Nexus Linux GRUB theme
+#
+# Colors follow the Nexus brand: deep navy background (#0B0E16), light
+# blue-gray text and a bright blue (#6CB6E2) selection bar. The background
+# image already contains the dark navy backdrop and the white Nexus logo.
+
+# General settings
+desktop-image: "background.png"
+desktop-color: "#0B0E16"
+message-font: "DejaVu Sans Regular 16"
+message-color: "#D8DEE9"
+message-bg-color: "#0B0E16"
+
+# Boot menu
++ boot_menu {
+    left = 28%
+    width = 44%
+    top = 48%
+    height = 34%
+    item_font = "DejaVu Sans Regular 16"
+    item_color = "#C9D6E3"
+    selected_item_font = "DejaVu Sans Bold 14"
+    selected_item_color = "#FFFFFF"
+    selected_item_pixmap_style = "assets/hl_*.png"
+    item_height = 34
+    item_padding = 8
+    item_spacing = 6
+    item_icon_space = 12
+    icon_width = 28
+    icon_height = 28
+    scrollbar = false
+    border_color = "#1B2A41"
+}
+
+# Hint bar at the bottom
++ label {
+    top = 100% - 42
+    left = 0
+    width = 100%
+    height = 22
+    text = "@KEYMAP_MIDDLE@"
+    align = "center"
+    font = "DejaVu Sans Regular 12"
+    color = "#7C8CA8"
+}
