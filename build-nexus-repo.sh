@@ -26,11 +26,43 @@ APPLY_SWAP="${1:---build-only}"
 
 # Nexus package signing. Every package and the repository database are signed
 # with the Nexus master key (see localpkgs/nexus-keyring). makepkg --sign and
-# repo-add -s read GPGKEY + GNUPGHOME; the key was generated with an empty
-# passphrase so signing is non-interactive. Override via NEXUS_GPGKEY /
+# repo-add -s read GPGKEY + GNUPGHOME. Override via NEXUS_GPGKEY /
 # NEXUS_GNUPGHOME if the key is restored somewhere else.
 export GPGKEY="${NEXUS_GPGKEY:-D7E66A16EB101E21ADC20D6315F9E61760540D3C}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
+
+# The master key is passphrase-protected (see gen-nexus-keyring.sh). Unlock it
+# once for this build by presetting the passphrase into gpg-agent, so makepkg
+# --sign and repo-add -s stay non-interactive. Provide the passphrase via
+# NEXUS_KEY_PASSPHRASE (secrets manager / CI) or it is prompted for.
+if [ -z "${NEXUS_KEY_PASSPHRASE+x}" ]; then
+    if [ -t 0 ]; then
+        read -r -s -p "Nexus signing key passphrase: " NEXUS_KEY_PASSPHRASE; echo
+    else
+        echo "ERROR: NEXUS_KEY_PASSPHRASE required for passphrase-protected signing key" >&2
+        exit 1
+    fi
+fi
+if [ -n "${NEXUS_KEY_PASSPHRASE:-}" ]; then
+    _keygrip="$(gpg --homedir "$GNUPGHOME" --with-colons --with-keygrip --list-secret-keys "$GPGKEY" 2>/dev/null \
+        | awk -F: '$1=="grp" {print $10; exit}')"
+    if [ -n "$_keygrip" ]; then
+        # allow-preset-passphrase lets a non-interactive process cache the
+        # passphrase; the agent restarts to pick up the setting.
+        grep -q '^allow-preset-passphrase$' "$GNUPGHOME/gpg-agent.conf" 2>/dev/null \
+            || printf 'allow-preset-passphrase\n' >> "$GNUPGHOME/gpg-agent.conf"
+        chmod 600 "$GNUPGHOME/gpg-agent.conf"
+        gpgconf --homedir "$GNUPGHOME" --kill gpg-agent 2>/dev/null || true
+        _hex="$(printf '%s' "$NEXUS_KEY_PASSPHRASE" | od -An -tx1 | tr -d ' \n')"
+        printf 'PRESET_PASSPHRASE %s -1 %s\n' "$_keygrip" "$_hex" \
+            | gpg-connect-agent --homedir "$GNUPGHOME" /bye >/dev/null 2>&1 \
+            || echo "UYARI: passphrase gpg-agent'a preset edilemedi (imzalama isteyebilir)" >&2
+        unset _hex
+    else
+        echo "UYARI: GPGKEY ($GPGKEY) icin keygrip bulunamadi; imzalama interaktif olabilir" >&2
+    fi
+    unset _keygrip NEXUS_KEY_PASSPHRASE
+fi
 
 # nexus-settings fetches the CachyOS-Settings git tag over a *signed* source.
 # makepkg verifies that signature with $GNUPGHOME (the Nexus keyring above),

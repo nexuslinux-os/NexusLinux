@@ -124,12 +124,15 @@ master key:
 
 - `build-nexus-repo.sh` builds with `makepkg --sign` and adds the database with
   `repo-add -s -k` using `GPGKEY`/`GNUPGHOME` (override via `NEXUS_GPGKEY` /
-  `NEXUS_GNUPGHOME`). The key has an empty passphrase, so builds sign non-interactively.
+  `NEXUS_GNUPGHOME`). The key is passphrase-protected; provide the passphrase
+  with `NEXUS_KEY_PASSPHRASE` (CI / secrets manager) or enter it at the prompt.
+  `build-nexus-repo.sh` presets it into `gpg-agent`, so signing stays non-interactive.
 - The `nexus-keyring` package's install script runs `pacman-key --add` and
   `pacman-key --lsign-key D7E66A16EB101E21ADC20D6315F9E61760540D3C`, so installed
   systems trust the key and verify the signatures.
 - The `[nexus]` repo (added by `./build-nexus-repo.sh --apply-swap`) points at
-  GitHub Releases and uses `SigLevel = Optional DatabaseOptional` instead of `TrustAll`.
+  GitHub Releases and uses `SigLevel = Required DatabaseOptional` (packages must be
+  signed by the Nexus master key; the db signature is optional).
 - `release-nexus.sh repo` publishes `nexus.db(.sig)`, `nexus.files(.sig)` and every
   `.pkg.tar.zst(.sig)` as release assets; `release-nexus.sh iso <file.iso>` publishes
   the ISO with its signature, checksum, `.img` and package list.
