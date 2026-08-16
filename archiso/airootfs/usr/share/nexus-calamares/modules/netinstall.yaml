@@ -96,7 +96,6 @@
           - pkgfile
           - rebuild-detector
           - reflector
-          - shelly
       - name: "desktop integration"
         description: "Useful helper tools and libs for desktop usage"
         selected: true
@@ -238,6 +237,7 @@
     - partitionmanager
     - phonon-qt6-vlc
     - plasma-browser-integration
+    - plasma-discover
     - plasma-desktop
     - plasma-firewall
     - plasma-nm
