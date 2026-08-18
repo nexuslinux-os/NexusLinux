@@ -235,6 +235,16 @@ EOF
           localpkgs/nexus-keyring/nexus-trusted \
           localpkgs/nexus-keyring/nexus-revoked "$KEYRINGS_DIR/"
     echo "  shipped Nexus keyring files to $KEYRINGS_DIR"
+
+    # Ship the nexus.db (repo database) into the ISO so the live system's
+    # pacman can resolve nexus-* packages without network access. The actual
+    # .pkg.tar.zst files are baked into the squashfs via packages*.x86_64;
+    # pacman finds them in the host cache. The file:// Server URL in the
+    # live pacman.conf points here.
+    NEXUS_REPO_DIR="archiso/airootfs/usr/share/nexus-repo"
+    mkdir -p "$NEXUS_REPO_DIR"
+    cp -f "$REPO/nexus.db" "$REPO/nexus.db.sig" "$NEXUS_REPO_DIR/"
+    echo "  shipped nexus.db to $NEXUS_REPO_DIR (file:// for live ISO)"
     echo "NOTE: OFFLINE installs bake the swapped nexus-* packages into the"
     echo "      live squashfs (packages*.x86_64 + build [nexus] file:// local"
     echo "      repo), so they work without a network."
