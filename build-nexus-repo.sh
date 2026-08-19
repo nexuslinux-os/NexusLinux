@@ -245,6 +245,21 @@ EOF
     mkdir -p "$NEXUS_REPO_DIR"
     cp -f "$REPO/nexus.db" "$REPO/nexus.db.sig" "$NEXUS_REPO_DIR/"
     echo "  shipped nexus.db to $NEXUS_REPO_DIR (file:// for live ISO)"
+
+    # Ship the CachyOS keyring files so `pacman-key --populate cachyos` works
+    # on the live ISO. Without these, [cachyos] repo cannot be synced after
+    # a keyring wipe (calamares-online.sh), and pacstrap fails entirely.
+    # The cachyos-keyring package is swapped to nexus-keyring in packages*.x86_64,
+    # so it is NOT installed on the squashfs — we must ship the raw keyring files.
+    CACHYOS_KEYRING_DIR="/usr/share/pacman/keyrings"
+    if [ -f "$CACHYOS_KEYRING_DIR/cachyos.gpg" ]; then
+        cp -f "$CACHYOS_KEYRING_DIR/cachyos.gpg" "$KEYRINGS_DIR/"
+        [ -f "$CACHYOS_KEYRING_DIR/cachyos-trusted" ] && \
+            cp -f "$CACHYOS_KEYRING_DIR/cachyos-trusted" "$KEYRINGS_DIR/"
+        echo "  shipped CachyOS keyring files to $KEYRINGS_DIR"
+    else
+        echo "  UYARI: $CACHYOS_KEYRING_DIR/cachyos.gpg bulunamadi — [cachyos] repo sync calismayabilir"
+    fi
     echo "NOTE: OFFLINE installs bake the swapped nexus-* packages into the"
     echo "      live squashfs (packages*.x86_64 + build [nexus] file:// local"
     echo "      repo), so they work without a network."

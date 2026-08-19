@@ -6,7 +6,7 @@
 
 pkgname=nexus-calamares
 pkgver=3.4.2
-pkgrel=8
+pkgrel=9
 pkgdesc='Distribution-independent installer framework (Nexus fork)'
 arch=('x86_64')
 license=(GPL-3.0-or-later)
@@ -95,6 +95,17 @@ prepare() {
         -e 's/\bcachyos-rate-mirrors\b/nexus-rate-mirrors/g' \
         -e 's/\bcachyos-settings\b/nexus-settings/g' \
         src/modules/pacstrap/pacstrap.conf
+    # Patch pacstrap_calamares: copy nexus-repo database into the target root
+    # BEFORE pacman runs, so that file:///usr/share/nexus-repo/ resolves
+    # correctly under --sysroot. Without this, pacman looks for the DB at
+    # <target>/usr/share/nexus-repo/nexus.db which does not exist yet.
+    sed -i '/^msg .Installing packages/a\
+\
+# Nexus: copy repo DB into target so file:// URLs work with --sysroot\
+if [ -d /usr/share/nexus-repo ] \&\& [ -d "$newroot" ]; then\
+    mkdir -p "$newroot/usr/share/nexus-repo"\
+    cp -f /usr/share/nexus-repo/* "$newroot/usr/share/nexus-repo/"\
+fi' src/scripts/pacstrap_calamares
 }
 
 build() {
