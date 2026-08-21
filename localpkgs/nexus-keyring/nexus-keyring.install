@@ -3,7 +3,7 @@ post_install() {
     # signature of nexus-* packages and the nexus repository database.
     if [ -x /usr/bin/pacman-key ]; then
         pacman-key --add /usr/share/pacman/keyrings/nexus.gpg 2>/dev/null || true
-        pacman-key --lsign-key F4C57604C90E90CD6AB3633F2AA4846E14CBE512 2>/dev/null || true
+        pacman-key --lsign-key 7E08C6020E20F32C9F95833C803D28F88FFED82B 2>/dev/null || true
     fi
 }
 
