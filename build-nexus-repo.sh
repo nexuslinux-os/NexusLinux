@@ -28,7 +28,7 @@ APPLY_SWAP="${1:---build-only}"
 # with the Nexus master key (see localpkgs/nexus-keyring). makepkg --sign and
 # repo-add -s read GPGKEY + GNUPGHOME. Override via NEXUS_GPGKEY /
 # NEXUS_GNUPGHOME if the key is restored somewhere else.
-export GPGKEY="${NEXUS_GPGKEY:-F4C57604C90E90CD6AB3633F2AA4846E14CBE512}"
+export GPGKEY="${NEXUS_GPGKEY:-7E08C6020E20F32C9F95833C803D28F88FFED82B}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 
 # The master key may or may not be passphrase-protected (see gen-nexus-keyring.sh).
