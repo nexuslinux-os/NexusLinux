@@ -34,8 +34,12 @@ else
     unset _confirm
 fi
 if [ "${#PASSPHRASE}" -lt 16 ]; then
-    echo "ERROR: passphrase too short (min. 16 characters)" >&2
-    exit 1
+    if [ -z "$PASSPHRASE" ]; then
+        echo "  -> passphrase bos, key korumasiz olusturulacak"
+    else
+        echo "ERROR: passphrase too short (min. 16 characters, or empty for no protection)" >&2
+        exit 1
+    fi
 fi
 # Hand the passphrase to gpg via --passphrase-file so it never appears in a
 # process listing; stash it in a 0600 file under the (0700) keyring dir.

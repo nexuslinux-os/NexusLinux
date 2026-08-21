@@ -31,16 +31,17 @@ APPLY_SWAP="${1:---build-only}"
 export GPGKEY="${NEXUS_GPGKEY:-F4C57604C90E90CD6AB3633F2AA4846E14CBE512}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 
-# The master key is passphrase-protected (see gen-nexus-keyring.sh). Unlock it
-# once for this build by presetting the passphrase into gpg-agent, so makepkg
-# --sign and repo-add -s stay non-interactive. Provide the passphrase via
-# NEXUS_KEY_PASSPHRASE (secrets manager / CI) or it is prompted for.
+# The master key may or may not be passphrase-protected (see gen-nexus-keyring.sh).
+# If passphrase-protected, unlock it once for this build by presetting the
+# passphrase into gpg-agent, so makepkg --sign and repo-add -s stay non-interactive.
+# Provide the passphrase via NEXUS_KEY_PASSPHRASE (secrets manager / CI),
+# or it is prompted for. Empty passphrase (key without protection) skips preset.
 if [ -z "${NEXUS_KEY_PASSPHRASE+x}" ]; then
     if [ -t 0 ]; then
-        read -r -s -p "Nexus signing key passphrase: " NEXUS_KEY_PASSPHRASE; echo
+        read -r -s -p "Nexus signing key passphrase (enter for no passphrase): " NEXUS_KEY_PASSPHRASE; echo
     else
-        echo "ERROR: NEXUS_KEY_PASSPHRASE required for passphrase-protected signing key" >&2
-        exit 1
+        echo "WARNING: NEXUS_KEY_PASSPHRASE not set, assuming passphrase-less key" >&2
+        NEXUS_KEY_PASSPHRASE=""
     fi
 fi
 if [ -n "${NEXUS_KEY_PASSPHRASE:-}" ]; then
