@@ -100,7 +100,7 @@ EOF
 
 # /etc/version-tag is read by the Calamares installer logs. Pin it to the
 # current stable CachyOS ISO version; bump this when CachyOS releases a newer ISO.
-_CACHYOS_STABLE_ISO_VERSION="260628"
+_CACHYOS_STABLE_ISO_VERSION="260809"
 
 generate_version_tag() {
     local _profile="$1"
