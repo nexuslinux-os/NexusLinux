@@ -1,0 +1,8 @@
+[kcminputrc][Mouse]
+cursorTheme=Nexus-Cursors
+
+[kdeglobals][Icons]
+Theme=Nexus-Dark
+
+[soundthemerc][sound]
+name=Nexus-Sounds

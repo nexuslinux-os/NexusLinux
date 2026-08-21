@@ -42,16 +42,22 @@ for conf in kdeglobals kwinrc plasmarc plasma-org.kde.plasma.desktop-appletsrc; 
     fi
 done
 
-# Nexus ships a completely default KDE (stock Breeze) with only the wallpaper changed.
-# cachyos-kde-settings pushes its own look into the skeleton via config files we do not
-# overwrite above, so drop them from both the installed-system skeleton and the live
-# user's home. This keeps the default Plasma theme, cursor, GTK look and panel layout.
+# Apply the Nexus Look-and-Feel global theme. This sets cursor (Nexus-Cursors),
+# icon (Nexus-Dark), and sound (Nexus-Sounds) defaults via the theme's
+# contents/defaults file. Run it before skeleton cleanup so the configs land
+# first, then we clean up cachyos-kde-settings leftovers.
+if command -v lookandfeeltool &>/dev/null; then
+    lookandfeeltool -a Nexus || echo "WARNING: lookandfeeltool -a Nexus failed"
+fi
+
+# cachyos-kde-settings pushes its own look into the skeleton via config files
+# we do not overwrite above. Drop its leftovers from both the installed-system
+# skeleton and the live user's home, preserving our Nexus theme configs.
 for _skel in /etc/skel /home/liveuser; do
     [ -d "$_skel" ] || continue
     rm -rf "$_skel/.config/kdedefaults"
     rm -f "$_skel/.config/plasmashellrc"
     rm -f "$_skel/.config/Trolltech.conf"
-    rm -f "$_skel/.config/kcminputrc"
     rm -rf "$_skel/.config/gtk-3.0"
     rm -rf "$_skel/.config/gtk-4.0"
     rm -rf "$_skel/.config/xsettingsd"
