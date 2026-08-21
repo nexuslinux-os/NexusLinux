@@ -1,0 +1,8 @@
+[Sound Theme]
+Name=Nexus-Sounds
+Comment=Nexus Sound Theme
+Directories=stereo
+Example=theme-demo
+
+[stereo]
+OutputProfile=stereo

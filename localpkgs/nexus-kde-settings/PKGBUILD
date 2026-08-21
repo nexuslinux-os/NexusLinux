@@ -1,12 +1,13 @@
 # Maintainer: Nexus Linux
-# Nexus KDE Plasma desktop defaults: stock panel layout, default Breeze look
-# and Nexus wallpaper, shipped as /etc/skel so both the live user and installed
-# systems start with the Nexus look. Replaces the CachyOS KDE settings.
+# Nexus KDE Plasma desktop defaults: Nexus Look-and-Feel global theme,
+# Nexus-Dark icons, Nexus-Cursors, Nexus-Sounds and Nexus wallpaper.
+# Shipped as /etc/skel so both the live user and installed systems start
+# with the full Nexus look. Replaces the CachyOS KDE settings.
 
 pkgname=nexus-kde-settings
 pkgver=2.0
-pkgrel=1
-pkgdesc='Default KDE Plasma settings for Nexus Linux (stock Breeze)'
+pkgrel=2
+pkgdesc='Default KDE Plasma settings for Nexus Linux (Nexus Look-and-Feel)'
 arch=('any')
 url='https://nexuslinux.org'
 license=(GPL-3.0-or-later)

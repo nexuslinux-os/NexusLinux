@@ -6,3 +6,6 @@ XftSubPixel=none
 
 [KDE]
 ColorScheme=BreezeDark
+
+[Icons]
+Theme=Nexus-Dark

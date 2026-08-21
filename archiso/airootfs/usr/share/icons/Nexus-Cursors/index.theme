@@ -1,0 +1,4 @@
+[Icon Theme]
+Name=Nexus-Cursors
+Comment=Nexus cursor theme. White and rounded edge cursors.
+Inherits="hicolor"
