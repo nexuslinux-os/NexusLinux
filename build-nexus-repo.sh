@@ -237,15 +237,17 @@ EOF
           localpkgs/nexus-keyring/nexus-revoked "$KEYRINGS_DIR/"
     echo "  shipped Nexus keyring files to $KEYRINGS_DIR"
 
-    # Ship the nexus.db (repo database) into the ISO so the live system's
-    # pacman can resolve nexus-* packages without network access. The actual
-    # .pkg.tar.zst files are baked into the squashfs via packages*.x86_64;
-    # pacman finds them in the host cache. The file:// Server URL in the
-    # live pacman.conf points here.
+    # Ship the nexus repo database AND actual .pkg.tar.zst files into the ISO.
+    # The live system's /etc/pacman.conf points [nexus] at
+    # file:///usr/share/nexus-repo/, and pacstrap_calamares copies this
+    # directory into the install target so --sysroot file:// URLs resolve.
+    # Without the actual package files, pacman sees the packages in the DB
+    # but cannot fetch them (error: "failed to retrieve file ... from disk").
     NEXUS_REPO_DIR="archiso/airootfs/usr/share/nexus-repo"
     mkdir -p "$NEXUS_REPO_DIR"
     cp -f "$REPO/nexus.db" "$REPO/nexus.db.sig" "$NEXUS_REPO_DIR/"
-    echo "  shipped nexus.db to $NEXUS_REPO_DIR (file:// for live ISO)"
+    cp -f "$REPO/"*.pkg.tar.zst "$REPO/"*.pkg.tar.zst.sig "$NEXUS_REPO_DIR/" 2>/dev/null || true
+    echo "  shipped nexus.db + $(ls "$NEXUS_REPO_DIR/"*.pkg.tar.zst 2>/dev/null | wc -l) packages to $NEXUS_REPO_DIR (file:// for live ISO)"
 
     # Ship the CachyOS keyring files so `pacman-key --populate cachyos` works
     # on the live ISO. Without these, [cachyos] repo cannot be synced after
@@ -264,6 +266,8 @@ EOF
     echo "NOTE: OFFLINE installs bake the swapped nexus-* packages into the"
     echo "      live squashfs (packages*.x86_64 + build [nexus] file:// local"
     echo "      repo), so they work without a network."
+    echo "      The nexus-repo directory also ships .pkg.tar.zst files for"
+    echo "      pacstrap's file:// resolution via --sysroot."
     echo "      ONLINE installs resolve nexus-* from GitHub Releases"
     echo "      (https://github.com/nexuslinux/nexuslinux/releases/latest/download/)."
     echo "      Publish the local repo there first with:"

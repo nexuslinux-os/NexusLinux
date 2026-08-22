@@ -24,14 +24,21 @@ if [ -f /usr/share/calamares/settings_online.conf ]; then
     install -Dm644 /usr/share/calamares/settings_online.conf /etc/calamares/settings.conf
 fi
 sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/welcome.conf
+sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/shellprocess-before.conf
 sed -i 's/cachyos-${cpu}/nexus-${cpu}/' /etc/calamares/modules/users.conf
 
-# The cachyos-kde-settings package ships its own configs into /etc/skel/.config and
-# overwrites whatever was placed in the profile airootfs during pacstrap. The canonical
-# Nexus desktop layout therefore lives in /usr/share/nexus-skel and is applied here, after
-# all packages are installed. mkarchiso copies /etc/skel into the live user's home before
-# this script runs, so we write to both /etc/skel (used for installed systems) and
-# /home/liveuser (used by the live session).
+# Apply the Nexus Look-and-Feel global theme BEFORE skeleton copy.
+# lookandfeeltool writes its own plasma-org.kde.plasma.desktop-appletsrc which
+# resets the wallpaper to the theme default (or Breeze fallback). By running
+# this BEFORE we overwrite the skeleton, our Nexus wallpaper config takes
+# precedence and survives the theme application.
+if command -v lookandfeeltool &>/dev/null; then
+    QT_QPA_PLATFORM=offscreen lookandfeeltool -a Nexus || echo "WARNING: lookandfeeltool -a Nexus failed"
+fi
+
+# Now overwrite skeleton files with the canonical Nexus configs (wallpaper,
+# panel layout, cursor/icon/theme) so they take precedence over anything
+# lookandfeeltool or cachyos-kde-settings wrote.
 NEXUS_SKEL=/usr/share/nexus-skel/.config
 for conf in kdeglobals kwinrc plasmarc plasma-org.kde.plasma.desktop-appletsrc; do
     if [ -f "$NEXUS_SKEL/$conf" ]; then
@@ -42,16 +49,19 @@ for conf in kdeglobals kwinrc plasmarc plasma-org.kde.plasma.desktop-appletsrc; 
     fi
 done
 
-# Apply the Nexus Look-and-Feel global theme. This sets cursor (Nexus-Cursors),
-# icon (Nexus-Dark), and sound (Nexus-Sounds) defaults via the theme's
-# contents/defaults file. Run it before skeleton cleanup so the configs land
-# first, then we clean up cachyos-kde-settings leftovers.
-if command -v lookandfeeltool &>/dev/null; then
-    lookandfeeltool -a Nexus || echo "WARNING: lookandfeeltool -a Nexus failed"
-fi
+# Disable KDE Plasma splash screen (ksplash). After plymouth exits, KDE would
+# normally show its own Breeze splash animation before the desktop appears.
+# We only want the plymouth Nexus splash; disable ksplash via plasmarc.
+for _skel in /etc/skel /home/liveuser; do
+    [ -d "$_skel" ] || continue
+    cat >> "$_skel/.config/plasmarc" <<'PLASMA'
 
-# cachyos-kde-settings pushes its own look into the skeleton via config files
-# we do not overwrite above. Drop its leftovers from both the installed-system
+[KSplash]
+Theme=none
+PLASMA
+done
+
+# Drop cachyos-kde-settings leftovers from both the installed-system
 # skeleton and the live user's home, preserving our Nexus theme configs.
 for _skel in /etc/skel /home/liveuser; do
     [ -d "$_skel" ] || continue

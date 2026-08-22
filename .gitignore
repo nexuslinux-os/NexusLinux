@@ -15,6 +15,7 @@ localpkgs/*/gnupg/
 **/private-keys-v1.d/
 **/openpgp-revocs.d/
 **/.gnupg/
+nexus-master-key.asc
 
 # makepkg build trees and git clones
 localpkgs/*/pkg/
