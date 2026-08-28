@@ -92,3 +92,29 @@ jobs:
           name: nexus-linux-iso
           path: out/**/*.iso
           if-no-files-found: error
+
+      - name: Publish ISO + repo to GitHub Releases
+        # Manual ISO builds also publish the built nexus-* packages (repo) and
+        # the ISO itself to GitHub Releases. The [nexus] Server points at
+        # /releases/latest/download, so this keeps online installs working.
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh auth setup-git
+          cd "$GITHUB_WORKSPACE"
+          ISO_PATH="$(find out -maxdepth 2 -name '*.iso' -print -quit)"
+          [ -n "$ISO_PATH" ] || { echo "no ISO built"; exit 1; }
+          TAG="nexus-iso-$(date -u +%Y.%m.%d)-$GITHUB_RUN_NUMBER"
+          NOTES="Nexus Linux ISO build (GitHub Actions run $GITHUB_RUN_NUMBER)
+
+Profiles:
+$(find out -maxdepth 1 -mindepth 1 -type d -printf '  - %f\n')"
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Nexus Linux $TAG" \
+            --notes "$NOTES" \
+            "$ISO_PATH" out/*/SHA256SUMS out/*/pkgs.txt 2>/dev/null || \
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "Nexus Linux $TAG" --notes "$NOTES" "$ISO_PATH"
+          echo "Released: $GITHUB_REPOSITORY/releases/tag/$TAG"
