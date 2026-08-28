@@ -38,7 +38,8 @@ jobs:
       - name: Update packages + non-root builder
         run: |
           set -e
-          pacman --noconfirm -Syu
+          pacman --noconfirm -Syyu
+          pacman --noconfirm -S git --needed
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
           chmod 440 /etc/sudoers.d/builder
@@ -66,14 +67,17 @@ jobs:
       - name: Update packages + non-root builder
         run: |
           set -e
-          pacman --noconfirm -Syu
+          pacman --noconfirm -Syyu
+          pacman --noconfirm -S git --needed
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
           chmod 440 /etc/sudoers.d/builder
           chown -R builder:builder "$GITHUB_WORKSPACE" 2>/dev/null || true
       - name: Install build dependencies
         # Mirrors build-nexus-iso.sh step [2/6] (build/makedepends + archiso).
-        run: pacman --noconfirm -S \
+        run: |
+          pacman --noconfirm -Syy
+          pacman --noconfirm -S \
             git meson cargo clang lld llvm \
             glib2 gtk3 pciutils procps-ng libusb \
             boost boost-libs ckbcomp cryptsetup dmidecode gptfdisk hwinfo \
