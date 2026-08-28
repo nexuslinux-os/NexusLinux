@@ -38,7 +38,8 @@ sudo pacman -S --needed --noconfirm \
     python-jsonschema python-pyaml python-unidecode qt6-tools \
     zram-generator ananicy-cpp cachyos-ananicy-rules inxi systemd iw wireless-regdb \
     bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
-    pkgfile tealdeer ttf-fantasque-nerd
+    pkgfile tealdeer ttf-fantasque-nerd \
+    scx-manager
 
 echo "==> [3/6] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh

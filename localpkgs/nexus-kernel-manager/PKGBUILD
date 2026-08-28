@@ -11,7 +11,7 @@ arch=(aarch64 x86_64)
 url="https://github.com/nexuslinux-os/NexusLinux"
 license=(GPL-3.0-or-later)
 depends=('qt6-base' 'polkit' 'chwd' 'scx-manager')
-makedepends=('cmake' 'ninja' 'git' 'python' 'polkit-qt6' 'qt6-tools' 'cargo' 'lld' 'clang' 'llvm')
+makedepends=('cmake' 'ninja' 'git' 'python' 'polkit-qt6' 'qt6-tools' 'cargo' 'lld' 'clang' 'llvm' 'scx-manager')
 conflicts=('cachyos-kernel-manager')
 provides=('cachyos-kernel-manager')
 source=("kernel-manager::git+https://github.com/cachyos/kernel-manager.git#tag=v${pkgver}?signed"
