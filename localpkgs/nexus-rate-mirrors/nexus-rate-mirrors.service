@@ -1,6 +1,6 @@
 [Unit]
 Description=Refresh arch / cachyos mirror lists
-Documentation=https://github.com/nexuslinux/nexuslinux
+Documentation=https://github.com/nexuslinux-os/NexusLinux
 After=network-online.target nss-lookup.target
 
 [Service]

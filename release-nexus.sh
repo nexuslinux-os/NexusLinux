@@ -3,7 +3,7 @@
 #
 # Nexus has no dedicated package mirror yet, so GitHub Releases doubles as
 # the package server: pacman's [nexus] Server points at
-#   https://github.com/nexuslinux/nexuslinux/releases/latest/download/
+#   https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/
 # and every file published here is reachable under that URL (nexus.db,
 # nexus.files, *.pkg.tar.zst, ...).
 #
@@ -18,7 +18,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 ROOT="$(pwd)"
 REPO="$ROOT/localpkgs/repo"
-GIT_REPO="${NEXUS_GIT_REPO:-nexuslinux/nexuslinux}"
+GIT_REPO="${NEXUS_GIT_REPO:-nexuslinux-os/NexusLinux}"
 TAG_PREFIX="${NEXUS_TAG_PREFIX:-nexus-v}"
 export GPGKEY="${NEXUS_GPGKEY:-F4C57604C90E90CD6AB3633F2AA4846E14CBE512}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"

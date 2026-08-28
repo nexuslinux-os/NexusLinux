@@ -12,7 +12,7 @@ attacks are not tolerated.
 
 ### Reporting bugs
 
-- Open an issue at `https://github.com/nexuslinux/nexuslinux/issues`.
+- Open an issue at `https://github.com/nexuslinux-os/NexusLinux/issues`.
 - Include the Nexus version, the ISO build date (`cat /etc/version-tag`), the
   hardware profile (if relevant) and the exact steps to reproduce.
 - For security vulnerabilities use the private disclosure path — see
