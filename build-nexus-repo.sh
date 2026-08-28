@@ -202,7 +202,7 @@ SigLevel = Optional TrustAll
 # the latest release's assets here and follows the redirect transparently.
 # TrustAll matches the [cachyos] section; the Nexus master key is populated
 # into the live keyring from /usr/share/pacman/keyrings (calamares-online.sh).
-Server = https://github.com/nexuslinux/nexuslinux/releases/latest/download/
+Server = https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/
 EOF
         echo "  appended [nexus] repo to $LIVE_PACMAN_CONF"
     else
@@ -269,7 +269,7 @@ EOF
     echo "      The nexus-repo directory also ships .pkg.tar.zst files for"
     echo "      pacstrap's file:// resolution via --sysroot."
     echo "      ONLINE installs resolve nexus-* from GitHub Releases"
-    echo "      (https://github.com/nexuslinux/nexuslinux/releases/latest/download/)."
+    echo "      (https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/)."
     echo "      Publish the local repo there first with:"
     echo "          ./release-nexus.sh repo"
     echo "      Otherwise ONLINE installs will not find the nexus-* packages."

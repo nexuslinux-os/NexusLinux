@@ -81,7 +81,7 @@ Publishing the local repo before an ISO build makes live installs work:
   is network-only).
 - GitHub Releases is used as the package server (no dedicated mirror yet);
   every update is a new release. Assets are served at
-  `https://github.com/nexuslinux/nexuslinux/releases/latest/download/`.
+  `https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/`.
 
 ### Manual steps
 

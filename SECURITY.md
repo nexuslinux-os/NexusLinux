@@ -15,7 +15,7 @@ Instead, report privately so the issue can be fixed before disclosure:
   the Nexus master key listed in `README.md`)
 - Or use GitHub's private disclosure: open a new issue and select the
   "Report a security vulnerability" / private advisory flow on
-  `https://github.com/nexuslinux/nexuslinux/security/advisories/new`
+  `https://github.com/nexuslinux-os/NexusLinux/security/advisories/new`
 
 Please include:
 

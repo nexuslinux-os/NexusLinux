@@ -9,7 +9,7 @@ pkgrel=2
 arch=('any')
 license=('GPL-3.0-or-later')
 pkgdesc='Nexus - Handheld!'
-url='https://github.com/nexuslinux/nexuslinux'
+url='https://github.com/nexuslinux-os/NexusLinux'
 source=("git+https://github.com/CachyOS/CachyOS-Handheld.git?signed#tag=$pkgver")
 install="$pkgname.install"
 options=(!strip !debug)
