@@ -38,6 +38,12 @@ jobs:
       - name: Update packages + non-root builder
         run: |
           set -e
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman-key --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --lsign-key E8B9AA39F054E30E8290D492C3C4820857F654FE
+          printf '[cachyos]\nSigLevel = Required DatabaseOptional\nServer = https://mirror.cachyos.org/repo/x86_64/cachyos\n' > /etc/pacman.d/cachyos.conf
+          printf 'Include = /etc/pacman.d/cachyos.conf\n' >> /etc/pacman.conf
           pacman --noconfirm -Syyu
           pacman --noconfirm -S git --needed
           useradd -m builder
@@ -67,6 +73,12 @@ jobs:
       - name: Update packages + non-root builder
         run: |
           set -e
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman-key --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --lsign-key E8B9AA39F054E30E8290D492C3C4820857F654FE
+          printf '[cachyos]\nSigLevel = Required DatabaseOptional\nServer = https://mirror.cachyos.org/repo/x86_64/cachyos\n' > /etc/pacman.d/cachyos.conf
+          printf 'Include = /etc/pacman.d/cachyos.conf\n' >> /etc/pacman.conf
           pacman --noconfirm -Syyu
           pacman --noconfirm -S git --needed
           useradd -m builder
