@@ -119,7 +119,7 @@ jobs:
             bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
             pkgfile tealdeer ttf-fantasque-nerd \
             archiso mkinitcpio-archiso gnupg \
-            scx-manager
+            scx-manager grub
       - name: Restore Nexus signing key
         run: |
           mkdir -p localpkgs/nexus-keyring/gnupg/private-keys-v1.d localpkgs/nexus-keyring/gnupg/openpgp-revocs.d

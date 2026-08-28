@@ -39,7 +39,7 @@ sudo pacman -S --needed --noconfirm \
     zram-generator ananicy-cpp cachyos-ananicy-rules inxi systemd iw wireless-regdb \
     bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
     pkgfile tealdeer ttf-fantasque-nerd \
-    scx-manager
+    scx-manager grub
 
 echo "==> [3/6] Building Nexus fork packages + local repo"
 ./build-nexus-repo.sh
