@@ -41,7 +41,9 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman-key --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --recv-keys 882DCFE48E2051D48E2562ABF3B607488DB35A47
           pacman-key --lsign-key E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --lsign-key 882DCFE48E2051D48E2562ABF3B607488DB35A47
           printf '[cachyos]\nSigLevel = Required DatabaseOptional\nServer = https://mirror.cachyos.org/repo/x86_64/cachyos\n' > /etc/pacman.d/cachyos.conf
           printf 'Include = /etc/pacman.d/cachyos.conf\n' >> /etc/pacman.conf
           pacman --noconfirm -Syyu
@@ -76,7 +78,9 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman-key --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --recv-keys 882DCFE48E2051D48E2562ABF3B607488DB35A47
           pacman-key --lsign-key E8B9AA39F054E30E8290D492C3C4820857F654FE
+          pacman-key --lsign-key 882DCFE48E2051D48E2562ABF3B607488DB35A47
           printf '[cachyos]\nSigLevel = Required DatabaseOptional\nServer = https://mirror.cachyos.org/repo/x86_64/cachyos\n' > /etc/pacman.d/cachyos.conf
           printf 'Include = /etc/pacman.d/cachyos.conf\n' >> /etc/pacman.conf
           pacman --noconfirm -Syyu
