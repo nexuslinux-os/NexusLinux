@@ -10,18 +10,35 @@ permissions:
   contents: write
 
 jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    container: archlinux/archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update packages
+        run: pacman --noconfirm -Syu
+      - name: Install shellcheck
+        run: pacman --noconfirm -S shellcheck
+      - name: Run ShellCheck
+        run: |
+          set -e
+          mapfile -t SCRIPTS < <(git ls-files -- '*.sh' '*.bash')
+          if [ ${#SCRIPTS[@]} -eq 0 ]; then
+            echo "No shell scripts tracked"; exit 0
+          fi
+          shellcheck --shell=bash --severity=warning "${SCRIPTS[@]}"
+
   verify-sources:
     name: Verify package sources
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    container: archlinux/archlinux:base-devel
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare pacman + non-root builder
+      - name: Update packages + non-root builder
         run: |
           set -e
-          echo "Server = https://geo.mirror.pkgbuild.com/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
-          pacman-key --init && pacman-key --populate archlinux
-          pacman --noconfirm -Syu base-devel sudo
+          pacman --noconfirm -Syu
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
           chmod 440 /etc/sudoers.d/builder
@@ -41,17 +58,15 @@ jobs:
     name: Build ISO and publish
     runs-on: ubuntu-latest
     container:
-      image: archlinux:latest
+      image: archlinux/archlinux:base-devel
       options: --privileged
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare pacman + non-root builder
+      - name: Update packages + non-root builder
         run: |
           set -e
-          echo "Server = https://geo.mirror.pkgbuild.com/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
-          pacman-key --init && pacman-key --populate archlinux
-          pacman --noconfirm -Syu base-devel sudo
+          pacman --noconfirm -Syu
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
           chmod 440 /etc/sudoers.d/builder
