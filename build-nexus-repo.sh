@@ -116,7 +116,17 @@ for name in "${PACKAGE_LIST[@]}"; do
     #   --sign  sign the package with the Nexus master key (GPGKEY/GNUPGHOME above).
     built=0
     for attempt in 1 2 3; do
-        if ( cd "$pkgdir" && makepkg -df --sign ) 2>&1 | tee -a "$REPO/.build-nexus-repo.log"; then
+        # makepkg refuses to run as root. In CI/containers we run as root, so
+        # when BUILD_USER is set, make the package dir writable and run makepkg
+        # as that (non-root) user. GNUPGHOME must be readable by them too.
+        if [ -n "${BUILD_USER:-}" ] && [ "$(id -u)" = 0 ]; then
+            chown -R "${BUILD_USER}:${BUILD_USER}" "$pkgdir" 2>/dev/null || true
+            chown -R "${BUILD_USER}:${BUILD_USER}" "$GNUPGHOME" 2>/dev/null || true
+            cmd=(runuser -u "$BUILD_USER" -- makepkg -df --sign)
+        else
+            cmd=(makepkg -df --sign)
+        fi
+        if ( cd "$pkgdir" && "${cmd[@]}" ) 2>&1 | tee -a "$REPO/.build-nexus-repo.log"; then
             built=1
             break
         fi
