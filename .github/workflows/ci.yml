@@ -6,9 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   shellcheck:
-    name: ShellCheck all shell scripts
+    name: ShellCheck
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
@@ -22,7 +25,6 @@ jobs:
           if [ ${#SCRIPTS[@]} -eq 0 ]; then
             echo "No shell scripts tracked"; exit 0
           fi
-          # shellcheck disable=SC2016
           shellcheck --shell=bash --severity=warning "${SCRIPTS[@]}"
 
   verify-sources:
@@ -44,7 +46,7 @@ jobs:
           done
 
   build-iso:
-    name: Build ISO (manual / tag only)
+    name: Build ISO and publish
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
@@ -53,8 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install build dependencies
-        # Mirrors build-nexus-iso.sh step [2/6] (build deps of the fork
-        # packages + archiso tooling).
         run: pacman --noconfirm -Sy \
             base-devel git meson cargo clang lld llvm \
             glib2 gtk3 pciutils procps-ng libusb \
@@ -69,52 +69,42 @@ jobs:
             bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
             pkgfile tealdeer ttf-fantasque-nerd \
             archiso mkinitcpio-archiso sudo gnupg
-      - name: Restore Nexus signing key from secret
+      - name: Restore Nexus signing key
         run: |
-          : "${NEXUS_KEY_ASC:?set NEXUS_KEY_ASC (base64 of nexus-master-key.asc) and NEXUS_KEY_PASSPHRASE secrets to sign the ISO}"
           mkdir -p localpkgs/nexus-keyring/gnupg/private-keys-v1.d localpkgs/nexus-keyring/gnupg/openpgp-revocs.d
           chmod 700 localpkgs/nexus-keyring/gnupg
-          echo "$NEXUS_KEY_ASC" | base64 --decode > localpkgs/nexus-keyring/gnupg/nexus-master-key.asc
+          echo "${NEXUS_KEY_ASC}" | base64 --decode > localpkgs/nexus-keyring/gnupg/nexus-master-key.asc
           gpg --homedir localpkgs/nexus-keyring/gnupg --batch --import localpkgs/nexus-keyring/gnupg/nexus-master-key.asc
         env:
-          NEXUS_KEY_ASC: ${{ secrets.NEXUS_KEY_ASC }}
+          NEXUS_KEY_ASC: "${{ secrets.NEXUS_KEY_ASC }}"
+      - name: Get nexus.db from latest release
+        run: |
+          curl -sfL -o localpkgs/repo/nexus.db "https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/nexus.db" || true
+          curl -sfL -o localpkgs/repo/nexus.db.sig "https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/nexus.db.sig" || true
       - name: Build Nexus ISO
-        # build-nexus-repo.sh resolves GNUPGHOME itself (defaults to
-        # localpkgs/nexus-keyring/gnupg, where the restore step imported the
-        # key) and reads NEXUS_KEY_PASSPHRASE to unlock it non-interactively.
         run: ./build-nexus-iso.sh desktop
         env:
-          NEXUS_KEY_PASSPHRASE: ${{ secrets.NEXUS_KEY_PASSPHRASE }}
-          NEXUS_GPGKEY: ${{ secrets.NEXUS_GPGKEY }}
+          NEXUS_KEY_PASSPHRASE: "${{ secrets.NEXUS_KEY_PASSPHRASE }}"
+          NEXUS_GPGKEY: "${{ secrets.NEXUS_GPGKEY }}"
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
           name: nexus-linux-iso
           path: out/**/*.iso
           if-no-files-found: error
-
-      - name: Publish ISO + repo to GitHub Releases
-        # Manual ISO builds also publish the built nexus-* packages (repo) and
-        # the ISO itself to GitHub Releases. The [nexus] Server points at
-        # /releases/latest/download, so this keeps online installs working.
+      - name: Publish to GitHub Releases
         if: github.event_name == 'workflow_dispatch'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           set -e
-          gh auth setup-git
-          cd "$GITHUB_WORKSPACE"
           ISO_PATH="$(find out -maxdepth 2 -name '*.iso' -print -quit)"
           [ -n "$ISO_PATH" ] || { echo "no ISO built"; exit 1; }
-          TAG="nexus-iso-$(date -u +%Y.%m.%d)-$GITHUB_RUN_NUMBER"
-          NOTES="Nexus Linux ISO build (GitHub Actions run $GITHUB_RUN_NUMBER)
-
-Profiles:
-$(find out -maxdepth 1 -mindepth 1 -type d -printf '  - %f\n')"
+          TAG="nexus-iso-$(date -u +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
+          NOTES="Nexus Linux ISO build (GitHub Actions run ${GITHUB_RUN_NUMBER})"
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --title "Nexus Linux $TAG" \
             --notes "$NOTES" \
-            "$ISO_PATH" out/*/SHA256SUMS out/*/pkgs.txt 2>/dev/null || \
-            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "Nexus Linux $TAG" --notes "$NOTES" "$ISO_PATH"
+            "$ISO_PATH"
           echo "Released: $GITHUB_REPOSITORY/releases/tag/$TAG"
