@@ -22,6 +22,8 @@ nexus-v3-mirrorlist
 nexus-v4-mirrorlist
 chwd
 ckbcomp
+clamav
+clamtk
 cryptsetup
 darkhttpd
 dhcpcd

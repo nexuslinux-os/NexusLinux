@@ -25,6 +25,8 @@ nexus-v3-mirrorlist
 nexus-v4-mirrorlist
 chwd
 ckbcomp
+clamav
+clamtk
 clonezilla
 cloud-init
 cryptsetup
