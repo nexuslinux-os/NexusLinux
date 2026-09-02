@@ -36,7 +36,7 @@ sudo pacman -S --needed --noconfirm \
     qt6-imageformats python-toml \
     cmake doxygen extra-cmake-modules ninja \
     python-jsonschema python-pyaml python-unidecode qt6-tools \
-    zram-generator ananicy-cpp cachyos-ananicy-rules inxi systemd iw wireless-regdb \
+    zram-generator ananicy-cpp inxi systemd iw wireless-regdb \
     bat expac eza fastfetch fish fish-autopair fish-pure-prompt fisher fzf \
     pkgfile tealdeer ttf-fantasque-nerd \
     scx-manager grub
@@ -61,17 +61,16 @@ fi
 # path), and points the [nexus] repo at GitHub Releases (no dedicated mirror).
 # Publishing the local repo first makes ONLINE installs work:
 #   ./build-nexus-repo.sh && ./release-nexus.sh repo
-# Swap is ON by default; set NEXUS_SWAP=0 to keep the upstream cachyos-*
-# packages instead. Offline installs need no network (packages are baked in).
+# Swap is ON by default; set NEXUS_SWAP=0 to skip the swap. Offline installs need no network (packages are baked in).
 if [ "${NEXUS_SWAP:-1}" != "0" ]; then
     echo "==> [4/6] Wiring fork packages into the ISO profile (swap) [NEXUS_SWAP=1]"
     ./build-nexus-repo.sh --apply-swap
 else
-    echo "==> [4/6] Skipping fork swap (upstream cachyos-* packages in the ISO) [NEXUS_SWAP=0]."
+    echo "==> [4/6] Skipping fork swap [NEXUS_SWAP=0]."
 fi
 
 echo "==> [5/6] Building ISO (profile: $PROFILE)"
-# cachyos-calamares-next owns /etc/calamares/modules/netinstall.yaml and
+# nexus-calamares owns /etc/calamares/modules/netinstall.yaml and
 # packagechooser_desktop.conf, so any copies in the profile airootfs make
 # pacstrap abort with a file conflict. The Nexus versions live at the
 # non-conflicting staging path /usr/share/nexus-calamares/modules and are

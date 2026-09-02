@@ -1,7 +1,7 @@
 # Contributing to Nexus Linux
 
-Thanks for your interest in Nexus Linux! This project is a fork of CachyOS that
-rebuilds the CachyOS package set under Nexus branding.
+Thanks for your interest in Nexus Linux! This project is an Arch-based distribution
+with its own package repository built with `archiso`.
 
 ## Code of conduct
 
@@ -32,19 +32,18 @@ tooling listed in `build-nexus-iso.sh` step [2/6]. It runs on a real Arch host
 (not a non-Arch sandbox):
 
 ```bash
-./build-nexus-iso.sh desktop   # full ISO build (fork packages -> local repo -> ISO)
+./build-nexus-iso.sh desktop   # full ISO build (packages -> local repo -> ISO)
 ```
 
-`build-nexus-repo.sh` builds the fork packages and local repository alone:
+`build-nexus-repo.sh` builds the packages and local repository alone:
 
 ```bash
 ./build-nexus-repo.sh            # build packages + create local repo (no swap)
 ./build-nexus-repo.sh --apply-swap  # also wire nexus-* packages into the ISO profile
 ```
 
-The fork packages live in `localpkgs/<name>/PKGBUILD`. Each one is a fork of the
-CachyOS equivalent (see the `url=` field) with Nexus branding applied in
-`prepare()`/`package()`.
+The packages live in `localpkgs/<name>/PKGBUILD`. Each one is a package with
+Nexus branding applied in `prepare()`/`package()`.
 
 ## Checks
 

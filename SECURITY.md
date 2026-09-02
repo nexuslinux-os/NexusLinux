@@ -38,9 +38,9 @@ backported to the current release and announced in the release notes.
 - The private key must be backed up to an **offline** (air-gapped) medium. Do
   not keep it only on the build machine. Losing it means re-signing the whole
   repository.
-- `pacman.conf` uses `SigLevel = Required DatabaseOptional` for both `[cachyos]`
-  and `[nexus]`: package signatures are always verified against the trusted
-  keyring. `TrustAll` is deliberately **not** used. Do not weaken this.
+- `pacman.conf` uses `SigLevel = Required DatabaseOptional` for `[nexus]`: package
+  signatures are always verified against the trusted keyring. `TrustAll` is
+  deliberately **not** used. Do not weaken this.
 - CI signing is done with the key restored from GitHub Actions secrets
   (`NEXUS_KEY_ASC`, `NEXUS_KEY_PASSPHRASE`); the key material never enters the
   repository.

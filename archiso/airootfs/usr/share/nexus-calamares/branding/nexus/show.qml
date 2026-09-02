@@ -66,7 +66,7 @@ Presentation
             verticalAlignment: Text.AlignVCenter
             color: "#FFFFFF"
             font.pointSize: 18
-            text: qsTr("Nexus Linux ships with the Nexus kernel,\ntuned repositories and an intuitive installer.")
+            text: qsTr("Nexus Linux ships with the Zen kernel,\ntuned repositories and an intuitive installer.")
         }
     }
 

@@ -10,9 +10,7 @@ bluedevil
 bolt
 breeze-gtk
 btrfs-progs
-cachy-chroot
 nexus-calamares
-cachyos-cli-installer-new
 nexus-fish-config
 nexus-hooks
 nexus-kde-settings
@@ -30,7 +28,7 @@ dhcpcd
 diffutils
 dmidecode
 dmraid
-dolphin
+nautilus
 dosfstools
 e2fsprogs
 efibootmgr
@@ -53,7 +51,7 @@ kate
 kcalc
 kde-gtk-config
 kinfocenter
-konsole
+ptyxis
 kpackage
 kscreen
 kxkb2locale1
@@ -62,10 +60,9 @@ less
 libfido2
 libusb-compat
 libwnck3
-linux-cachyos-lts
-linux-cachyos-lts-nvidia-open
-linux-cachyos
-linux-cachyos-nvidia-open
+linux-zen
+linux-zen-headers
+nvidia-dkms
 linux-firmware
 linux-firmware-marvell
 lsb-release

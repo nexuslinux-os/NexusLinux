@@ -1,41 +1,41 @@
 # Nexus Linux
 
-A Linux distribution derived from [CachyOS](https://cachyos.org), built with `archiso`. Nexus Linux ships the KDE Plasma desktop, the Calamares installer (offline and online), and its own repository of forked packages with Nexus branding.
+A Linux distribution built on **pure Arch Linux** with `archiso`. Nexus Linux ships the KDE Plasma desktop, the Calamares installer (offline and online), and its own repository of packages with Nexus branding.
 
-This repository contains the live ISO build configuration and the source for the Nexus fork packages.
+This repository contains the live ISO build configuration and the source for the Nexus packages.
 
 ## Repository layout
 
 ```
 .
 ├── archiso/                    # airootfs overlay, pacman.conf, package lists
-├── localpkgs/                  # Nexus fork packages (built into a local repo)
+├── localpkgs/                  # Nexus packages (built into a local repo)
 ├── build-nexus-iso.sh          # one-shot ISO build (+ release artifacts)
-├── build-nexus-repo.sh         # fork package build + profile swap
+├── build-nexus-repo.sh         # package build + profile wiring
 ├── release-nexus.sh            # publish repo/ISO to GitHub Releases
 ├── buildiso.sh                 # upstream ISO build driver
 └── util-iso.sh                 # profile/version helpers
 ```
 
-## Fork packages (`localpkgs/`)
+## Packages (`localpkgs/`)
 
-| Package | Replaces | Purpose |
-| --- | --- | --- |
-| `nexus-keyring` | `cachyos-keyring` | Nexus package signing keys (`nexus.gpg`, `nexus-trusted`, `nexus-revoked`) |
-| `nexus-mirrorlist` | `cachyos-mirrorlist` | Nexus mirrorlist (installed to `/etc/pacman.d/cachyos-*` paths) |
-| `nexus-hooks` | `cachyos-hooks` | libalpm hooks |
-| `nexus-wallpapers` | `cachyos-wallpapers` | Default wallpapers + per-desktop defaults |
-| `nexus-kde-settings` | `cachyos-kde-settings` | Default KDE Plasma settings |
-| `nexus-fish-config` | `cachyos-fish-config` | Fish shell configuration |
-| `nexus-zsh-config` | `cachyos-zsh-config` | Zsh shell configuration |
-| `nexus-settings` | `cachyos-settings` | System settings (systemd services, udev rules) |
-| `nexus-micro-settings` | `cachyos-micro-settings` | Micro tunables (zram, sysctl) |
-| `nexus-kernel-manager` | `cachyos-kernel-manager` | Kernel manager |
-| `nexus-packageinstaller` | `cachyos-packageinstaller` | Package installer |
-| `nexus-handheld` | `cachyos-handheld` | Handheld (Steam Deck-like) support |
-| `nexus-mangowc-dms` | `cachyos-mangowc-dms` | MangoWM (+DMS) settings |
-| `nexus-rate-mirrors` | `cachyos-rate-mirrors` | Mirror rating service/timer |
-| `nexus-calamares` | `cachyos-calamares-next` | Calamares installer (built from source) |
+| Package | Purpose |
+| --- | --- |
+| `nexus-keyring` | Nexus package signing keys (`nexus.gpg`, `nexus-trusted`, `nexus-revoked`) |
+| `nexus-mirrorlist` | Nexus mirrorlist (installed to `/etc/pacman.d/` paths) |
+| `nexus-hooks` | libalpm hooks |
+| `nexus-wallpapers` | Default wallpapers + per-desktop defaults |
+| `nexus-kde-settings` | Default KDE Plasma settings |
+| `nexus-fish-config` | Fish shell configuration |
+| `nexus-zsh-config` | Zsh shell configuration |
+| `nexus-settings` | System settings (systemd services, udev rules) |
+| `nexus-micro-settings` | Micro tunables (zram, sysctl) |
+| `nexus-kernel-manager` | Kernel manager |
+| `nexus-packageinstaller` | Package installer |
+| `nexus-handheld` | Handheld (Steam Deck-like) support |
+| `nexus-mangowc-dms` | MangoWM (+DMS) settings |
+| `nexus-rate-mirrors` | Mirror rating service/timer |
+| `nexus-calamares` | Calamares installer (built from source) |
 
 ## Building the ISO
 
@@ -59,9 +59,9 @@ This script:
 
 1. Imports the upstream PGP keys used for signed sources
 2. Installs all build/makedepends in one `pacman` call
-3. Builds every fork package in `localpkgs/` and populates `localpkgs/repo/`
+3. Builds every package in `localpkgs/` and populates `localpkgs/repo/`
    (transient network failures are retried up to 3 times)
-4. Swaps `cachyos-*` → `nexus-*` in the profile (default ON) and points the
+4. Wires `nexus-*` packages into the ISO profile and points the
    `[nexus]` repo at **GitHub Releases** (`latest/download/`), so the live
    installer and installed systems resolve Nexus packages over the network
 5. Builds the ISO and writes release artifacts to `out/<profile>/`
@@ -70,15 +70,12 @@ This script:
 Publishing the local repo before an ISO build makes live installs work:
 
 ```bash
-./build-nexus-repo.sh           # build + sign fork packages, create local repo
+./build-nexus-repo.sh           # build + sign packages, create local repo
 ./release-nexus.sh repo         # publish the repo as a GitHub Release
-./build-nexus-iso.sh            # ISO with the nexus-* swap (default ON)
+./build-nexus-iso.sh            # ISO with the nexus-* packages wired (default ON)
 ./release-nexus.sh iso out/desktop/nexus.iso   # publish the ISO
 ```
 
-- Set `NEXUS_SWAP=0` to keep the upstream `cachyos-*` packages instead (also
-  the only way to get an offline-capable installer, since the `[nexus]` repo
-  is network-only).
 - GitHub Releases is used as the package server (no dedicated mirror yet);
   every update is a new release. Assets are served at
   `https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/`.
@@ -86,10 +83,10 @@ Publishing the local repo before an ISO build makes live installs work:
 ### Manual steps
 
 ```bash
-# build fork packages + create local repo
+# build packages + create local repo
 ./build-nexus-repo.sh
 
-# wire fork packages into the ISO profile (only once the Nexus repo is reachable)
+# wire packages into the ISO profile
 ./build-nexus-repo.sh --apply-swap
 
 # build the ISO
@@ -119,7 +116,7 @@ The master signing key is generated by `localpkgs/nexus-keyring/gen-nexus-keyrin
 
 ## Repository signing
 
-Every Nexus fork package and the `nexus.db` repository database are signed with the
+Every Nexus package and the `nexus.db` repository database are signed with the
 master key:
 
 - `build-nexus-repo.sh` builds with `makepkg --sign` and adds the database with
@@ -147,7 +144,5 @@ cd localpkgs/nexus-keyring && GNUPGHOME="$PWD/gnupg" GPGKEY=F4C57604C90E90CD6AB3
 
 - The installed system's `pacman.conf` is generated from `archiso/pacman.conf` +
   `pacman-more.conf` by shellprocess scripts, and the repo section name must match the
-  mirror's database filename. Nexus keeps the `cachyos` repo section names (and
-  `/etc/pacman.d/cachyos-*` paths) for the CachyOS repos.
-- Packages that are not forked (`linux-cachyos*` kernels, `chwd`, deckify, ...) remain
-  as upstream `cachyos-*` packages in the profile on purpose.
+  mirror's database filename. Nexus uses its own repo section names.
+- Packages from Arch repositories remain as upstream Arch packages.

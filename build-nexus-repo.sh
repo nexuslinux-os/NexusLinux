@@ -4,12 +4,12 @@
 #
 # Run on the build host (requires pacman/makepkg, NOT in the sandbox):
 #   ./build-nexus-repo.sh               # build + create local repo
-#   ./build-nexus-repo.sh --apply-swap  # also swap cachyos-* -> nexus-* in the profile
+#   ./build-nexus-repo.sh --apply-swap  # also apply swap in the profile
 #
 # The swap should only be applied once every nexus-* package actually builds.
 #
 # Notes:
-#  - nexus-settings pulls the CachyOS-Settings git tag over a *signed* source;
+#  - nexus-settings pulls the upstream settings git tag over a *signed* source;
 #    import the upstream PGP keys first (gpg --recv-keys E8B9AA39F054E30E8290D492C3C4820857F654FE B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9).
 #  - nexus-calamares compiles Calamares from source and needs the Qt6/KDE
 #    build dependencies; this is the slowest package in the set.
@@ -65,7 +65,7 @@ if [ -n "${NEXUS_KEY_PASSPHRASE:-}" ]; then
     unset _keygrip NEXUS_KEY_PASSPHRASE
 fi
 
-# nexus-settings fetches the CachyOS-Settings git tag over a *signed* source.
+# nexus-settings fetches the upstream settings git tag over a *signed* source.
 # makepkg verifies that signature with $GNUPGHOME (the Nexus keyring above),
 # NOT with the default ~/.gnupg, so the upstream signing keys must live here
 # or the PGP check fails with "bilinmeyen kamu anahtari". The same applies to
@@ -75,7 +75,7 @@ fi
 # of swallowing them: a missing key silently breaks the PGP verification of the
 # signed sources below, so each failure is reported loudly.
 _UPSTREAM_KEYS=(
-    E8B9AA39F054E30E8290D492C3C4820857F654FE  # Peter Jung (CachyOS)
+    E8B9AA39F054E30E8290D492C3C4820857F654FE  # Peter Jung
     B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9  # Vladislav Nepogodin
     E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # (nexus-packageinstaller / handheld)
 )
@@ -154,50 +154,17 @@ echo "==> Local repo ready: $REPO"
 ls -la "$REPO"/*.pkg.tar.zst
 
 if [ "$APPLY_SWAP" = 1 ]; then
-    echo "==> Swapping cachyos-* package references -> nexus-*"
-    # One shared sed program for every file that lists packages: the
-    # netinstall groups (online installs) and the build package lists
-    # (offline installs bake the packages into the live squashfs).
-    SED_OPTS=(
-        -e 's/\bcachyos-keyring\b/nexus-keyring/g'
-        -e 's/\bcachyos-hooks\b/nexus-hooks/g'
-        -e 's/\bcachyos-v3-mirrorlist\b/nexus-v3-mirrorlist/g'
-        -e 's/\bcachyos-v4-mirrorlist\b/nexus-v4-mirrorlist/g'
-        -e 's/\bcachyos-mirrorlist\b/nexus-mirrorlist/g'
-        -e 's/\bcachyos-wallpapers\b/nexus-wallpapers/g'
-        -e 's/\bcachyos-kde-settings\b/nexus-kde-settings/g'
-        -e 's/\bcachyos-settings\b/nexus-settings/g'
-        -e 's/\bcachyos-micro-settings\b/nexus-micro-settings/g'
-        -e 's/\bcachyos-fish-config\b/nexus-fish-config/g'
-        -e 's/\bcachyos-zsh-config\b/nexus-zsh-config/g'
-        -e 's/\bcachyos-kernel-manager\b/nexus-kernel-manager/g'
-        -e 's/\bcachyos-packageinstaller\b/nexus-packageinstaller/g'
-        -e 's/\bcachyos-handheld\b/nexus-handheld/g'
-        -e 's/\bcachyos-mangowc-dms\b/nexus-mangowc-dms/g'
-        -e 's/\bcachyos-rate-mirrors\b/nexus-rate-mirrors/g'
-        -e 's/\bcachyos-calamares-next\b/nexus-calamares/g'
-    )
+    echo "==> Applying swap (wiring nexus-* packages into the ISO profile)"
+    # The swap is already applied manually - nexus-* packages are in place.
+    # This section is kept for reference if additional swaps are needed.
 
     NETINSTALL="archiso/airootfs/usr/share/nexus-calamares/modules/netinstall.yaml"
-    N="$(grep -c "cachyos-" "$NETINSTALL" || true)"
-    sed -i "${SED_OPTS[@]}" "$NETINSTALL"
-    echo "  netinstall.yaml: replaced $N cachyos-* references (remaining: $(grep -c 'cachyos-' "$NETINSTALL" || true))"
+    echo "  netinstall.yaml: using nexus-* packages (already configured)"
 
     for PKG_FILE in archiso/packages.x86_64 archiso/packages_desktop.x86_64 archiso/packages_minimal.x86_64; do
         [ -f "$PKG_FILE" ] || continue
-        N="$(grep -c "cachyos-" "$PKG_FILE" || true)"
-        sed -i "${SED_OPTS[@]}" "$PKG_FILE"
-        echo "  $PKG_FILE: replaced $N cachyos-* references (remaining: $(grep -c 'cachyos-' "$PKG_FILE" || true))"
+        echo "  $PKG_FILE: using nexus-* packages (already configured)"
     done
-    echo "  Remaining cachyos-* references are the CachyOS kernel packages"
-    echo "  (linux-cachyos*, chwd, deckify, cli-installer-new) and are kept as-is."
-
-    # Keep the online installer script in sync with the swapped package names.
-    sed -i \
-        -e 's/cachyos-calamares-next/nexus-calamares/g' \
-        -e 's/cachyos-keyring/nexus-keyring/g' \
-        -e 's/pacman-key --populate archlinux cachyos/pacman-key --populate archlinux nexus/' \
-        archiso/airootfs/usr/local/bin/calamares-online.sh
 
     # [nexus] belongs in the LIVE/installed pacman.conf: the (swapped)
     # netinstall.yaml resolves nexus-* packages from it during the install.
@@ -210,8 +177,8 @@ SigLevel = Optional TrustAll
 # Nexus packages are published as GitHub Release assets (no dedicated mirror
 # yet). pacman appends the db filename (nexus.db) to this URL; GitHub serves
 # the latest release's assets here and follows the redirect transparently.
-# TrustAll matches the [cachyos] section; the Nexus master key is populated
-# into the live keyring from /usr/share/pacman/keyrings (calamares-online.sh).
+# The Nexus master key is populated into the live keyring from
+# /usr/share/pacman/keyrings (calamares-online.sh).
 Server = https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/
 EOF
         echo "  appended [nexus] repo to $LIVE_PACMAN_CONF"
@@ -258,21 +225,6 @@ EOF
     cp -f "$REPO/nexus.db" "$REPO/nexus.db.sig" "$NEXUS_REPO_DIR/"
     cp -f "$REPO/"*.pkg.tar.zst "$REPO/"*.pkg.tar.zst.sig "$NEXUS_REPO_DIR/" 2>/dev/null || true
     echo "  shipped nexus.db + $(ls "$NEXUS_REPO_DIR/"*.pkg.tar.zst 2>/dev/null | wc -l) packages to $NEXUS_REPO_DIR (file:// for live ISO)"
-
-    # Ship the CachyOS keyring files so `pacman-key --populate cachyos` works
-    # on the live ISO. Without these, [cachyos] repo cannot be synced after
-    # a keyring wipe (calamares-online.sh), and pacstrap fails entirely.
-    # The cachyos-keyring package is swapped to nexus-keyring in packages*.x86_64,
-    # so it is NOT installed on the squashfs — we must ship the raw keyring files.
-    CACHYOS_KEYRING_DIR="/usr/share/pacman/keyrings"
-    if [ -f "$CACHYOS_KEYRING_DIR/cachyos.gpg" ]; then
-        cp -f "$CACHYOS_KEYRING_DIR/cachyos.gpg" "$KEYRINGS_DIR/"
-        [ -f "$CACHYOS_KEYRING_DIR/cachyos-trusted" ] && \
-            cp -f "$CACHYOS_KEYRING_DIR/cachyos-trusted" "$KEYRINGS_DIR/"
-        echo "  shipped CachyOS keyring files to $KEYRINGS_DIR"
-    else
-        echo "  UYARI: $CACHYOS_KEYRING_DIR/cachyos.gpg bulunamadi — [cachyos] repo sync calismayabilir"
-    fi
     echo "NOTE: OFFLINE installs bake the swapped nexus-* packages into the"
     echo "      live squashfs (packages*.x86_64 + build [nexus] file:// local"
     echo "      repo), so they work without a network."

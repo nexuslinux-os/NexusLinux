@@ -13,10 +13,8 @@ main() {
     sudo pacman -Syy --needed --noconfirm archlinux-keyring nexus-keyring
     # Also populate the keys, before starting the Installer, to avoid above issue
     sudo pacman-key --init
-    for _ring in nexus cachyos; do
-        sudo pacman-key --populate archlinux "$_ring" \
-            || echo "UYARI: $_ring anahtar halkasi populate edilemedi" >&2
-    done
+    sudo pacman-key --populate archlinux nexus \
+        || echo "UYARI: nexus anahtar halkasi populate edilemedi" >&2
     # Also use timedatectl to sync the time with the hardware clock
     # There has been a bunch of reports, that the keyring was created in the future
     # Syncing appears to fix it

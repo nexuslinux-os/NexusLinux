@@ -58,10 +58,9 @@ trap_exit() {
 generate_motd() {
     cat << 'EOF' > ${src_dir}/archiso/airootfs/etc/motd
 This ISO is based on ArchLinux ISO modified to provide Installation Environment for [38;2;23;147;209mNexus Linux[0m.
-Based on CachyOS.
 
 Nexus Linux Archiso Sources:
-https://github.com/cachyos/cachyos-live-iso
+https://github.com/nexuslinux-os/NexusLinux
 
 ArchLinux ISO Source:
 https://gitlab.archlinux.org/archlinux/archiso
@@ -75,13 +74,6 @@ Welcome to your [38;2;23;147;209mNexus Linux[0m!
 
 [41m [41m [41m [40m [44m [40m [41m [46m [45m [41m [46m [43m [41m [44m [45m [40m [44m [40m [41m [44m [41m [41m [46m [42m [41m [44m [43m [41m [45m [40m [40m [44m [40m [41m [44m [42m [41m [46m [44m [41m [46m [47m [0m
 EOF
-}
-
-fetch_cachyos_mirrorlist() {
-    mkdir -p ${src_dir}/archiso/airootfs/etc/pacman.d
-    local _mirrorlist_url="https://github.com/CachyOS/CachyOS-PKGBUILDS/raw/master/cachyos-mirrorlist/cachyos-mirrorlist"
-
-    curl -sSL "${_mirrorlist_url}" > ${src_dir}/archiso/airootfs/etc/pacman.d/cachyos-mirrorlist
 }
 
 change_grub_version() {
@@ -98,13 +90,9 @@ EOF
     fi
 }
 
-# /etc/version-tag is read by the Calamares installer logs. Pin it to the
-# current stable CachyOS ISO version; bump this when CachyOS releases a newer ISO.
-_CACHYOS_STABLE_ISO_VERSION="260809"
-
 generate_version_tag() {
     local _profile="$1"
-    echo "${_CACHYOS_STABLE_ISO_VERSION}" > ${src_dir}/archiso/airootfs/etc/version-tag
+    echo "1.0" > ${src_dir}/archiso/airootfs/etc/version-tag
 }
 
 generate_edition_tag() {
@@ -136,13 +124,7 @@ prepare_profile(){
     local _iso_version="$(date +%y%m%d)"
     change_grub_version "${_iso_version}"
 
-    # Fetch up-to-date version of CachyOS repo mirrorlist
-    fetch_cachyos_mirrorlist
-
-    # mask cachyos-rate-mirrors timer
-    ln -sf /dev/null ${src_dir}/archiso/airootfs/etc/systemd/system/cachyos-rate-mirrors.timer
-    # mask the archlinux-keyring WKD-sync timer the same way (replaces the old
-    # mkarchiso patch); a masked unit never starts even if enabled by pacstrap
+    # mask the archlinux-keyring WKD-sync timer
     ln -sf /dev/null ${src_dir}/archiso/airootfs/etc/systemd/system/archlinux-keyring-wkd-sync.timer
 
     generate_motd

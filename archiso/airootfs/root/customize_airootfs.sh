@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# cachyos-calamares-next owns /etc/calamares/modules/netinstall.yaml and
-# packagechooser_desktop.conf, so they cannot ship in the profile airootfs
-# (pacstrap aborts on the file conflict). Install the Nexus copies from the
-# non-conflicting staging path on top, after all packages are in place.
+# Nexus calamares modules are copied after pacstrap
 NEXUS_CALAMARES=/usr/share/nexus-calamares/modules
 for conf in netinstall.yaml packagechooser_desktop.conf shellprocess.conf; do
     if [ -f "$NEXUS_CALAMARES/$conf" ]; then
@@ -12,11 +9,7 @@ for conf in netinstall.yaml packagechooser_desktop.conf shellprocess.conf; do
     fi
 done
 
-# Bake Nexus branding into Calamares at build time so even a manual `calamares`
-# launch (not going through the launch scripts) shows Nexus, not CachyOS:
-# - branding directory
-# - /etc/calamares/settings.conf from the online (normal install) flow
-# - welcome/users module strings patched to Nexus
+# Bake Nexus branding into Calamares at build time
 if [ -d /usr/share/nexus-calamares/branding/nexus ]; then
     cp -r /usr/share/nexus-calamares/branding/nexus /usr/share/calamares/branding/nexus
 fi
@@ -38,7 +31,7 @@ fi
 
 # Now overwrite skeleton files with the canonical Nexus configs (wallpaper,
 # panel layout, cursor/icon/theme) so they take precedence over anything
-# lookandfeeltool or cachyos-kde-settings wrote.
+# the KDE settings wrote.
 NEXUS_SKEL=/usr/share/nexus-skel/.config
 for conf in kdeglobals kwinrc plasmarc plasma-org.kde.plasma.desktop-appletsrc; do
     if [ -f "$NEXUS_SKEL/$conf" ]; then
@@ -61,7 +54,7 @@ Theme=none
 PLASMA
 done
 
-# Drop cachyos-kde-settings leftovers from both the installed-system
+# Drop KDE settings leftovers from both the installed-system
 # skeleton and the live user's home, preserving our Nexus theme configs.
 for _skel in /etc/skel /home/liveuser; do
     [ -d "$_skel" ] || continue
@@ -74,7 +67,7 @@ for _skel in /etc/skel /home/liveuser; do
     rm -f "$_skel/.config/dconf/user"
 done
 
-# The cachyos-branding os-release hook writes "CachyOS" into /etc/os-release during
+# The branding os-release hook writes a generic name into /etc/os-release during
 # pacstrap. Overwrite it so the live session identifies as Nexus Linux. Preserve the
 # IMAGE_ID/IMAGE_VERSION lines appended by mkarchiso.
 _IMAGE_ID="$(sed -n 's/^IMAGE_ID=//p' /etc/os-release)"
