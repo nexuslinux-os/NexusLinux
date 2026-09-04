@@ -38,22 +38,32 @@ build_calamares() {
     rm -rf "$TMPDIR"
 }
 
-# Check if calamares is already installed
-if ! pacman -Q calamares >/dev/null 2>&1 && ! command -v calamares >/dev/null 2>&1; then
-    echo "==> [1/3] Building Calamares from source"
-    build_calamares
-else
-    echo "==> [1/3] Calamares already installed"
-fi
-
-echo "==> [2/3] Installing build dependencies"
+# Install build dependencies FIRST (including Calamares build deps)
+echo "==> [1/3] Installing build dependencies"
 sudo pacman -S --needed --noconfirm \
     archiso base-devel git \
     squashfs-tools dosfstools libisoburn \
-    arch-install-scripts
+    arch-install-scripts \
+    jsoncpp \
+    cmake extra-cmake-modules qt6-base qt6-declarative qt6-svg \
+    kconfig kcoreaddons kcrash ki18n kparts kpmcore kservice kwidgetsaddons \
+    libpwquality mkinitcpio-openswap networkmanager polkit-qt6 python \
+    qt6-tools yaml-cpp boost boost-libs
+
+# Update library cache after installing jsoncpp (fixes cmake libjsoncpp.so.26 error)
+sudo ldconfig
 
 # makepkg comes from base-devel
 command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }
+
+# Build Calamares from source AFTER deps are installed
+# Check if calamares is already installed
+if ! pacman -Q calamares >/dev/null 2>&1 && ! command -v calamares >/dev/null 2>&1; then
+    echo "==> [2/3] Building Calamares from source"
+    build_calamares
+else
+    echo "==> [2/3] Calamares already installed"
+fi
 
 # Clean any stale nexus-* packages from cache (shouldn't exist but safe)
 if ls /var/cache/pacman/pkg/nexus-*.pkg.tar.zst >/dev/null 2>&1; then
