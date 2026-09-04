@@ -1,0 +1,242 @@
+# Maintainer: Nexus Linux <nexus@nexuslinux.org>
+pkgname=nexus-calamares
+pkgver=1.0
+pkgrel=1
+pkgdesc="Nexus Linux Calamares modules, branding, and configuration"
+arch=(any)
+url="https://github.com/nexuslinux-os/NexusLinux"
+license=(GPL-3.0-or-later)
+depends=(calamares)
+package() {
+    # Calamares modules
+    install -dm755 "$pkgdir/usr/share/nexus-calamares/modules"
+    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/netinstall.yaml" <<'EOF'
+# SPDX-FileCopyrightText: no
+# SPDX-License-Identifier: CC0-1.0
+---
+sequence:
+  - show:
+      - welcome
+      - locale
+      - keyboard
+      - packagechooser@bootloader
+      - partition
+      - packagechooser@desktop
+      - netinstall
+      - users
+      - summary
+  - exec:
+      - partition
+      - zfs
+      - mount
+      - unpackfs
+      - machineid
+      - fstab
+      - locale
+      - keyboard
+      - localecfg
+      - luksbootkeyfile
+      - luksopenswaphookcfg
+      - initcpiocfg
+      - initcpio
+      - zfshostid
+      - removeuser
+      - users
+      - networkcfg
+      - displaymanager
+      - packages@offline
+      - hwclock
+      - bootloader
+      - shellprocess@before
+      - services-systemd
+      - shellprocess
+      - umount
+  - show:
+      - finished
+
+branding: nexus
+
+prompt-install: true
+
+dont-chroot: false
+
+oem-setup: false
+
+disable-cancel: false
+
+disable-cancel-during-exec: false
+
+hide-back-and-next-during-exec: true
+
+quit-at-end: false
+EOF
+
+    # Settings offline
+    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/settings_offline.conf" <<'EOF'
+# SPDX-FileCopyrightText: no
+# SPDX-License-Identifier: CC0-1.0
+---
+instances:
+  - id:       offline
+    module:   packages
+    config:   packages_offline.conf
+
+  - id:       before
+    module:   shellprocess
+    config:   shellprocess-before.conf
+
+  - id:       enable_ufw
+    module:   shellprocess
+    config:   shellprocess_enable_ufw.conf
+
+  - id:       bootloader
+    module:   packagechooser
+    config:   packagechooser_bootloader.conf
+
+  - id:       desktop
+    module:   packagechooser
+    config:   packagechooser_desktop.conf
+
+sequence:
+  - show:
+      - welcome
+      - locale
+      - keyboard
+      - packagechooser@bootloader
+      - partition
+      - packagechooser@desktop
+      - netinstall
+      - users
+      - summary
+  - exec:
+      - partition
+      - zfs
+      - mount
+      - unpackfs
+      - machineid
+      - fstab
+      - locale
+      - keyboard
+      - localecfg
+      - luksbootkeyfile
+      - luksopenswaphookcfg
+      - initcpiocfg
+      - initcpio
+      - zfshostid
+      - removeuser
+      - users
+      - networkcfg
+      - displaymanager
+      - packages@offline
+      - hwclock
+      - bootloader
+      - shellprocess@before
+      - services-systemd
+      - shellprocess
+      - umount
+  - show:
+      - finished
+
+branding: nexus
+
+prompt-install: true
+
+dont-chroot: false
+
+oem-setup: false
+
+disable-cancel: false
+
+disable-cancel-during-exec: false
+
+hide-back-and-next-during-exec: true
+
+quit-at-end: false
+EOF
+
+    # Branding
+    install -dm755 "$pkgdir/usr/share/nexus-calamares/branding/nexus"
+    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/branding/nexus/branding.desc" <<'EOF'
+{
+    "componentName": "nexus",
+    "version": "1.0",
+    "showHeader": true,
+    "showFooter": true,
+    "style": {
+        "background": "#1a1a2e",
+        "backgroundColor": "#1a1a2e",
+        "fontColor": "#ffffff",
+        "progressBar": {
+            "backgroundColor": "#0f0f1a",
+            "borderColor": "#1793d1",
+            "color": "#1793d1"
+        },
+        "sidebar": {
+            "backgroundColor": "#1a1a2e",
+            "borderColor": "#1793d1",
+            "fontColor": "#ffffff",
+            "selectedColor": "#1793d1",
+            "selectedFontColor": "#ffffff"
+        },
+        "mainWindow": {
+            "backgroundColor": "#1a1a2e",
+            "borderColor": "#1793d1",
+            "fontColor": "#ffffff"
+        }
+    }
+}
+EOF
+
+    # Write OS release script
+    install -m755 /dev/stdin "$pkgdir/usr/share/nexus-calamares/write-os-release.sh" <<'EOF'
+#!/bin/bash
+# Write Nexus Linux os-release for installed system
+set -e
+
+ROOT="${1:-/}"
+cat > "${ROOT}/etc/os-release" <<'EOS'
+NAME="Nexus Linux"
+PRETTY_NAME="Nexus Linux"
+ID=nexus
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://nexuslinux.org"
+SUPPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
+BUG_REPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
+EOS
+EOF
+
+    # Shellprocess config
+    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/shellprocess.conf" <<'EOF'
+# SPDX-FileCopyrightText: no
+# SPDX-License-Identifier: CC0-1.0
+---
+dontChroot: false
+timeout: 3600
+script:
+  - "-rm ${ROOT}/home/@@USER@@/.xinitrc"
+  - "-rm ${ROOT}/home/@@USER@@/.bash_profile"
+  - "-rm ${ROOT}/etc/sudoers.d/g_wheel"
+  - "-rm -r ${ROOT}/etc/systemd/system/getty@tty1.service.d"
+  - "-rm ${ROOT}/etc/systemd/system/etc-pacman.d-gnupg.mount"
+  - "-rm ${ROOT}/root/{.automated_script.sh,.zlogin,.xinitrc,.xsession,.xprofile,.wget-hsts,.screenrc,.ICEauthority}"
+  - "-rm ${ROOT}/root/.config/{qt5ct,Kvantum,dconf}"
+  - "-rm ${ROOT}/etc/polkit-1/rules.d/49-nopasswd_global.rules"
+  - "-rm ${ROOT}/etc/polkit-1/rules.d/49-nopasswd-calamares.rules"
+  - "-rm ${ROOT}/etc/systemd/system/display-manager.service"
+  - "-rm -r ${ROOT}/etc/sddm.conf.d"
+  - "-mv ${ROOT}/etc/sddm{-bk,}.conf"
+  - "-rm ${ROOT}/etc/motd"
+  - "bash ${ROOT}/usr/share/nexus-calamares/write-os-release.sh"
+  - command: "/usr/local/bin/dmcheck"
+  - "-rm @@ROOT@@/usr/local/bin/dmcheck"
+  - "-rm @@ROOT@@/usr/local/bin/calamares-offline.sh"
+  - "-rm @@ROOT@@/usr/local/bin/calamares-online.sh"
+  - "-rm @@ROOT@@/etc/skel/.xinitrc"
+  - "-rm @@ROOT@@/etc/skel/.bash_profile"
+  - '-runuser @@USER@@ -c "cp -rf @@ROOT@@/etc/skel/. @@ROOT@@/home/@@USER@@/."'
+  - '-runuser @@USER@@ -c "rm -rf @@ROOT@@/home/@@USER@@/{.xsession,.xprofile,.xinitrc}"'
+  - "sed -i 's|Server = file:///usr/share/nexus-repo/|Server = https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/|' ${ROOT}/etc/pacman.conf"
+EOF
+}

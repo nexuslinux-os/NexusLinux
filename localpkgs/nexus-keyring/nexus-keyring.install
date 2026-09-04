@@ -1,0 +1,29 @@
+post_install() {
+    # Initialize pacman keyring if needed
+    if [[ ! -d /etc/pacman.d/gnupg ]]; then
+        pacman-key --init
+    fi
+    
+    # Add and sign Nexus key
+    pacman-key --add /usr/share/pacman/keyrings/nexus.gpg
+    pacman-key --lsign-key "Nexus Linux Packaging"
+    
+    # Import trusted keys
+    if [[ -f /usr/share/pacman/keyrings/nexus-trusted ]]; then
+        while read -r line; do
+            [[ -n "$line" ]] && pacman-key --finger "$line"
+        done < /usr/share/pacman/keyrings/nexus-trusted
+    fi
+    
+    # Update trust database
+    pacman-key --populate archlinux
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    # Don't remove key on package removal to avoid breaking installed systems
+    true
+}

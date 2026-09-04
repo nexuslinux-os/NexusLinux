@@ -50,11 +50,26 @@ sudo pacman -S --needed --noconfirm \
     libpwquality mkinitcpio-openswap networkmanager polkit-qt6 python \
     qt6-tools yaml-cpp boost boost-libs
 
-# Update library cache after installing jsoncpp (fixes cmake libjsoncpp.so.26 error)
+# Reinstall cmake after jsoncpp update to fix libjsoncpp.so.26 linkage
+sudo pacman -S --needed --noconfirm --overwrite '*' cmake
+
+# Update library cache
 sudo ldconfig
 
 # makepkg comes from base-devel
 command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }
+
+# Build local Nexus packages (branding, wallpapers, keyring, calamares config)
+echo "==> Building local Nexus packages"
+for pkg in nexus-branding nexus-wallpapers nexus-keyring nexus-calamares; do
+    if [ -d "$ROOT/localpkgs/$pkg" ]; then
+        echo "  building $pkg"
+        ( cd "$ROOT/localpkgs/$pkg" && makepkg -sf --noconfirm --skippgpcheck )
+        # Copy to pacman cache so they're available during ISO build
+        cp "$ROOT/localpkgs/$pkg"/*.pkg.tar.zst /var/cache/pacman/pkg/ 2>/dev/null || true
+        sudo cp "$ROOT/localpkgs/$pkg"/*.pkg.tar.zst /var/cache/pacman/pkg/ 2>/dev/null || true
+    fi
+done
 
 # Build Calamares from source AFTER deps are installed
 # Check if calamares is already installed
