@@ -16,7 +16,37 @@ for dep in mkarchiso; do
     command -v "$dep" >/dev/null 2>&1 || { echo "HATA: eksik bağımlılık: $dep" >&2; exit 1; }
 done
 
-echo "==> [1/2] Installing build dependencies"
+# Build Calamares from source (not in official repos)
+build_calamares() {
+    echo "==> Building Calamares from source"
+    local TMPDIR=$(mktemp -d)
+    cd "$TMPDIR"
+    git clone --depth 1 --branch v3.3.12 https://github.com/calamares/calamares.git
+    cd calamares
+    mkdir build && cd build
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DINSTALL_CONFIG=ON \
+        -DSKIP_MODULES="webview interactiveterminal initramfs initramfscfg \
+            partition rawfs mount welcomeq license keyboard users locale \
+            networkcfg displaymanager bootloader grub grubcfg efi_bootloader \
+            services-openrc services-systemd fstab fsck keyboardq summaryq"
+    make -j$(nproc)
+    sudo make install
+    cd "$ROOT"
+    rm -rf "$TMPDIR"
+}
+
+# Check if calamares is already installed
+if ! pacman -Q calamares >/dev/null 2>&1 && ! command -v calamares >/dev/null 2>&1; then
+    echo "==> [1/3] Building Calamares from source"
+    build_calamares
+else
+    echo "==> [1/3] Calamares already installed"
+fi
+
+echo "==> [2/3] Installing build dependencies"
 sudo pacman -S --needed --noconfirm \
     archiso base-devel git \
     squashfs-tools dosfstools libisoburn \
@@ -32,7 +62,7 @@ if ls /var/cache/pacman/pkg/nexus-*.pkg.tar.zst >/dev/null 2>&1; then
     echo "    -> cleaned stale nexus-* from pacman cache"
 fi
 
-echo "==> [2/2] Building ISO (profile: $PROFILE)"
+echo "==> [3/3] Building ISO (profile: $PROFILE)"
 
 # Relocate any stray calamares module copies to staging path
 CALAMARES_CONFLICT="$ROOT/archiso/airootfs/etc/calamares/modules"
