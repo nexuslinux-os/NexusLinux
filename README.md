@@ -146,6 +146,3 @@ cd localpkgs/nexus-keyring && GNUPGHOME="$PWD/gnupg" GPGKEY=F4C57604C90E90CD6AB3
   `pacman-more.conf` by shellprocess scripts, and the repo section name must match the
   mirror's database filename. Nexus uses its own repo section names.
 - Packages from Arch repositories remain as upstream Arch packages.
-
-Errors:
-Build Error
