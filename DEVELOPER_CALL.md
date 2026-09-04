@@ -111,7 +111,8 @@ NexusLinux/
 
 - **Issues:** [GitHub Issues](https://github.com/nexuslinux-os/NexusLinux/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/nexuslinux-os/NexusLinux/discussions)
-- **Email:** `dev@nexuslinux.org` (planlanan)
+- **Email:** `nexuslinux@proton.me`
+ **Social Networks** Henüz yok
 
 ---
 
