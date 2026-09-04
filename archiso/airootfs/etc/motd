@@ -1,8 +1,7 @@
 This ISO is based on ArchLinux ISO modified to provide Installation Environment for [38;2;23;147;209mNexus Linux[0m.
-Based on CachyOS.
 
 Nexus Linux Archiso Sources:
-https://github.com/cachyos/cachyos-live-iso
+https://github.com/nexuslinux-os/NexusLinux
 
 ArchLinux ISO Source:
 https://gitlab.archlinux.org/archlinux/archiso
