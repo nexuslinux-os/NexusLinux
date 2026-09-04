@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 ROOT="$(pwd)"
 PROFILE="${1:-desktop}"
 
-for dep in makepkg mkarchiso; do
+for dep in mkarchiso; do
     command -v "$dep" >/dev/null 2>&1 || { echo "HATA: eksik bağımlılık: $dep" >&2; exit 1; }
 done
 
@@ -21,6 +21,9 @@ sudo pacman -S --needed --noconfirm \
     archiso base-devel git \
     squashfs-tools dosfstools libisoburn \
     arch-install-scripts
+
+# makepkg comes from base-devel
+command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }
 
 # Clean any stale nexus-* packages from cache (shouldn't exist but safe)
 if ls /var/cache/pacman/pkg/nexus-*.pkg.tar.zst >/dev/null 2>&1; then

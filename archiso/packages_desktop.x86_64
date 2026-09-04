@@ -13,8 +13,6 @@ bolt
 breeze-gtk
 brltty
 btrfs-progs
-chwd
-ckbcomp
 clamav
 clamtk
 clonezilla
@@ -63,7 +61,6 @@ kinfocenter
 ptyxis
 kpackage
 kscreen
-kxkb2locale1
 ldns
 less
 lftp
@@ -74,7 +71,6 @@ linux-atm
 linux-zen
 linux-zen-headers
 nvidia-dkms
-zfs-dkms
 linux-firmware
 linux-firmware-marvell
 linux-firmware-qlogic
@@ -88,12 +84,7 @@ vulkan-intel
 vulkan-radeon
 libva-intel-driver
 libva-mesa-driver
-mesa-vdpau
-r8168
-broadcom-wl-dkms
-rtl8821cu-dkms
-rtl8852be-dkms
-mt7921-firmware
+mesa
 bluez
 bluez-utils
 bluez-plugins
@@ -116,7 +107,6 @@ lsscsi
 lvm2
 lynx
 mc
-mdadm
 memtest86+
 memtest86+-efi
 mesa
@@ -152,7 +142,6 @@ partclone
 parted
 partimage
 partitionmanager
-paru
 pcsclite
 pipewire
 pipewire-alsa
@@ -212,5 +201,4 @@ xdg-user-dirs-gtk
 xdg-utils
 xfsprogs
 xl2tpd
-zfs-utils
 plymouth

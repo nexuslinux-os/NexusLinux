@@ -10,8 +10,6 @@ bluedevil
 bolt
 breeze-gtk
 btrfs-progs
-chwd
-ckbcomp
 clamav
 clamtk
 cryptsetup
@@ -46,7 +44,6 @@ kinfocenter
 ptyxis
 kpackage
 kscreen
-kxkb2locale1
 ldns
 less
 libfido2
@@ -68,8 +65,7 @@ vulkan-intel
 vulkan-radeon
 libva-intel-driver
 libva-mesa-driver
-mesa-vdpau
-r8168
+mesa
 bluez
 bluez-utils
 bluez-plugins
@@ -87,7 +83,6 @@ mdadm
 lsb-release
 lsof
 lvm2
-mdadm
 mesa
 mkinitcpio
 mkinitcpio-archiso
@@ -140,6 +135,7 @@ traceroute
 ttf-bitstream-vera
 ttf-dejavu
 ttf-liberation
+ttf-opensans
 udftools
 usbmuxd
 usbutils

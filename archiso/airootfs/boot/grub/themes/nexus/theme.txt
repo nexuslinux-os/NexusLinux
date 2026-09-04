@@ -1,0 +1,59 @@
+# Nexus Linux GRUB Theme
+
+# Colors
+title-color: "#1793d1"
+title-font: "DejaVu Sans Bold 16"
+message-color: "#ffffff"
+message-font: "DejaVu Sans 12"
+terminal-border: "#1793d1"
+terminal-color: "#ffffff"
+terminal-font: "DejaVu Sans Mono 10"
+
+# Background
+desktop-image: "background.png"
+desktop-color: "#1a1a2e"
+
+# Boot menu
+boot-menu {
+    left = 10%
+    top = 20%
+    width = 80%
+    height = 60%
+    item_color = "#ffffff"
+    item_font = "DejaVu Sans 14"
+    selected_item_color = "#1793d1"
+    selected_item_font = "DejaVu Sans Bold 14"
+    item_padding = 10
+    item_spacing = 5
+    scrollbar = true
+    scrollbar_thumb = "scrollbar_thumb.png"
+    scrollbar_track = "scrollbar_track.png"
+}
+
+# Progress bar
+progress_bar {
+    id = "__timeout__"
+    left = 10%
+    top = 85%
+    width = 80%
+    height = 12
+    bg_color = "#0f0f1a"
+    fg_color = "#1793d1"
+    border_color = "#1793d1"
+    border_width = 2
+    text = "@TIMEOUT_NOTIFICATION_LONG@"
+    text_color = "#ffffff"
+    font = "DejaVu Sans 10"
+}
+
+# Labels
+label {
+    top = 90%
+    left = 10%
+    width = 80%
+    height = 20
+    color = "#888888"
+    font = "DejaVu Sans 10"
+    align = "center"
+    text = "Nexus Linux - Pure Arch Based"
+}
