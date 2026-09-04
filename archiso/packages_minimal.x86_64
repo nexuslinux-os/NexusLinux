@@ -28,6 +28,7 @@ fakeroot
 fatresize
 gptfdisk
 grub
+calamares
 hwdetect
 hwinfo
 inetutils
