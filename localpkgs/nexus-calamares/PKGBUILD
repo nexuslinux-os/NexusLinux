@@ -7,704 +7,94 @@ arch=(any)
 url="https://github.com/nexuslinux-os/NexusLinux"
 license=(GPL-3.0-or-later)
 depends=(calamares)
+source=(branding.desc
+        write-os-release.sh
+        shellprocess.conf
+        netinstall.yaml
+        settings_offline.conf
+        kdeglobals
+        kwinrc
+        plasmarc
+        plasma-org.kde.plasma.desktop-appletsrc
+        metadata.json
+        colors/BreezeDark.colors
+        fonts/fonts.json
+        icons/icons.json
+        plasma/desktoptheme.json
+        splash/Splash.qml
+        look-and-feel/nexus/contents/colors/BreezeDark.colors
+        look-and-feel/nexus/contents/fonts/fonts.json
+        look-and-feel/nexus/contents/icons/icons.json
+        look-and-feel/nexus/contents/plasma/desktoptheme.json
+        look-and-feel/nexus/contents/splash/Splash.qml)
+sha256sums=('SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP'
+           'SKIP')
+
 package() {
     # Calamares modules
     install -dm755 "$pkgdir/usr/share/nexus-calamares/modules"
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/netinstall.yaml" <<'EOF'
-# SPDX-FileCopyrightText: no
-# SPDX-License-Identifier: CC0-1.0
----
-sequence:
-  - show:
-      - welcome
-      - locale
-      - keyboard
-      - packagechooser@bootloader
-      - partition
-      - packagechooser@desktop
-      - netinstall
-      - users
-      - summary
-  - exec:
-      - partition
-      - zfs
-      - mount
-      - unpackfs
-      - machineid
-      - fstab
-      - locale
-      - keyboard
-      - localecfg
-      - luksbootkeyfile
-      - luksopenswaphookcfg
-      - initcpiocfg
-      - initcpio
-      - zfshostid
-      - removeuser
-      - users
-      - networkcfg
-      - displaymanager
-      - packages@offline
-      - hwclock
-      - bootloader
-      - shellprocess@before
-      - services-systemd
-      - shellprocess
-      - umount
-  - show:
-      - finished
-
-branding: nexus
-
-prompt-install: true
-
-dont-chroot: false
-
-oem-setup: false
-
-disable-cancel: false
-
-disable-cancel-during-exec: false
-
-hide-back-and-next-during-exec: true
-
-quit-at-end: false
-EOF
-
-    # Settings offline
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/settings_offline.conf" <<'EOF'
-# SPDX-FileCopyrightText: no
-# SPDX-License-Identifier: CC0-1.0
----
-instances:
-  - id:       offline
-    module:   packages
-    config:   packages_offline.conf
-
-  - id:       before
-    module:   shellprocess
-    config:   shellprocess-before.conf
-
-  - id:       enable_ufw
-    module:   shellprocess
-    config:   shellprocess_enable_ufw.conf
-
-  - id:       bootloader
-    module:   packagechooser
-    config:   packagechooser_bootloader.conf
-
-  - id:       desktop
-    module:   packagechooser
-    config:   packagechooser_desktop.conf
-
-sequence:
-  - show:
-      - welcome
-      - locale
-      - keyboard
-      - packagechooser@bootloader
-      - partition
-      - packagechooser@desktop
-      - netinstall
-      - users
-      - summary
-  - exec:
-      - partition
-      - zfs
-      - mount
-      - unpackfs
-      - machineid
-      - fstab
-      - locale
-      - keyboard
-      - localecfg
-      - luksbootkeyfile
-      - luksopenswaphookcfg
-      - initcpiocfg
-      - initcpio
-      - zfshostid
-      - removeuser
-      - users
-      - networkcfg
-      - displaymanager
-      - packages@offline
-      - hwclock
-      - bootloader
-      - shellprocess@before
-      - services-systemd
-      - shellprocess
-      - umount
-  - show:
-      - finished
-
-branding: nexus
-
-prompt-install: true
-
-dont-chroot: false
-
-oem-setup: false
-
-disable-cancel: false
-
-disable-cancel-during-exec: false
-
-hide-back-and-next-during-exec: true
-
-quit-at-end: false
-EOF
-
-    # Branding directory with all required files
-    install -dm755 "$pkgdir/usr/share/nexus-calamares/branding/nexus"
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/branding/nexus/branding.desc" <<'EOF'
-{
-    "componentName": "nexus",
-    "version": "1.0",
-    "showHeader": true,
-    "showFooter": true,
-    "style": {
-        "background": "#1a1a2e",
-        "backgroundColor": "#1a1a2e",
-        "fontColor": "#ffffff",
-        "progressBar": {
-            "backgroundColor": "#0f0f1a",
-            "borderColor": "#1793d1",
-            "color": "#1793d1"
-        },
-        "sidebar": {
-            "backgroundColor": "#1a1a2e",
-            "borderColor": "#1793d1",
-            "fontColor": "#ffffff",
-            "selectedColor": "#1793d1",
-            "selectedFontColor": "#ffffff"
-        },
-        "mainWindow": {
-            "backgroundColor": "#1a1a2e",
-            "borderColor": "#1793d1",
-            "fontColor": "#ffffff"
-        }
-    }
-}
-EOF
+    install -m644 netinstall.yaml "$pkgdir/usr/share/nexus-calamares/modules/netinstall.yaml"
+    install -m644 settings_offline.conf "$pkgdir/usr/share/nexus-calamares/modules/settings_offline.conf"
+    install -m644 shellprocess.conf "$pkgdir/usr/share/nexus-calamares/modules/shellprocess.conf"
 
     # Write OS release script
-    install -m755 /dev/stdin "$pkgdir/usr/share/nexus-calamares/write-os-release.sh" <<'EOF'
-#!/bin/bash
-# Write Nexus Linux os-release for installed system
-set -e
-
-ROOT="${1:-/}"
-cat > "${ROOT}/etc/os-release" <<'EOS'
-NAME="Nexus Linux"
-PRETTY_NAME="Nexus Linux"
-ID=nexus
-ID_LIKE=arch
-BUILD_ID=rolling
-ANSI_COLOR="38;2;23;147;209"
-HOME_URL="https://nexuslinux.org"
-SUPPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-BUG_REPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-EOS
-EOF
+    install -m755 write-os-release.sh "$pkgdir/usr/share/nexus-calamares/write-os-release.sh"
 
     # Shellprocess config
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-calamares/modules/shellprocess.conf" <<'EOF'
-# SPDX-FileCopyrightText: no
-# SPDX-License-Identifier: CC0-1.0
----
-dontChroot: false
-timeout: 3600
-script:
-  - "-rm ${ROOT}/home/@@USER@@/.xinitrc"
-  - "-rm ${ROOT}/home/@@USER@@/.bash_profile"
-  - "-rm ${ROOT}/etc/sudoers.d/g_wheel"
-  - "-rm -r ${ROOT}/etc/systemd/system/getty@tty1.service.d"
-  - "-rm ${ROOT}/etc/systemd/system/etc-pacman.d-gnupg.mount"
-  - "-rm ${ROOT}/root/{.automated_script.sh,.zlogin,.xinitrc,.xsession,.xprofile,.wget-hsts,.screenrc,.ICEauthority}"
-  - "-rm ${ROOT}/root/.config/{qt5ct,Kvantum,dconf}"
-  - "-rm ${ROOT}/etc/polkit-1/rules.d/49-nopasswd_global.rules"
-  - "-rm ${ROOT}/etc/polkit-1/rules.d/49-nopasswd-calamares.rules"
-  - "-rm ${ROOT}/etc/systemd/system/display-manager.service"
-  - "-rm -r ${ROOT}/etc/sddm.conf.d"
-  - "-mv ${ROOT}/etc/sddm{-bk,}.conf"
-  - "-rm ${ROOT}/etc/motd"
-  - "bash ${ROOT}/usr/share/nexus-calamares/write-os-release.sh"
-  - command: "/usr/local/bin/dmcheck"
-  - "-rm @@ROOT@@/usr/local/bin/dmcheck"
-  - "-rm @@ROOT@@/usr/local/bin/calamares-offline.sh"
-  - "-rm @@ROOT@@/usr/local/bin/calamares-online.sh"
-  - "-rm @@ROOT@@/etc/skel/.xinitrc"
-  - "-rm @@ROOT@@/etc/skel/.bash_profile"
-  - '-runuser @@USER@@ -c "cp -rf @@ROOT@@/etc/skel/. @@ROOT@@/home/@@USER@@/."'
-  - '-runuser @@USER@@ -c "rm -rf @@ROOT@@/home/@@USER@@/{.xsession,.xprofile,.xinitrc}"'
-  - "sed -i 's|Server = file:///usr/share/nexus-repo/|Server = https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/|' ${ROOT}/etc/pacman.conf"
-EOF
+    install -m644 shellprocess.conf "$pkgdir/usr/share/nexus-calamares/modules/shellprocess.conf"
+
+    # Branding directory
+    install -dm755 "$pkgdir/usr/share/nexus-calamares/branding/nexus"
+    install -m644 branding.desc "$pkgdir/usr/share/nexus-calamares/branding/nexus/branding.desc"
 
     # Nexus skel configs for KDE Plasma
     install -dm755 "$pkgdir/usr/share/nexus-skel/.config"
-    
-    # kdeglobals
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-skel/.config/kdeglobals" <<'EOF'
-[General]
-widgetStyle=Breeze
-colorScheme=BreezeDark
-font=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-fixed=Noto Sans Mono,10,-1,5,50,0,0,0,0,0,0
-menuFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-taskbarFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-windowTitleFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-smallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0,0
-singleClick=false
-showToolTips=true
-autoRaise=false
-autoRaiseInterval=0
-cursorTheme=breeze_cursors
-cursorSize=24
-wheelScrollLines=3
-showMenuIcons=true
-showMenuShortcuts=true
-showShortcutKeysInTooltips=true
-askForConfirmation=false
-toolBarIconStyle=IconsOnly
-toolBarIconSize=Medium
-animationDurationFactor=1.0
-allowWheelToSwitchDesktop=true
-applicationIconsTheme=Breeze
-
-[KDE]
-SingleClick=false
-DoubleClickInterval=400
-WheelScrollLines=3
-ShowToolTips=true
-AutoRaise=false
-AutoRaiseInterval=0
-CursorTheme=breeze_cursors
-CursorSize=24
-WidgetStyle=Breeze
-ColorScheme=BreezeDark
-Font=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-Fixed=Noto Sans Mono,10,-1,5,50,0,0,0,0,0,0
-MenuFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-TaskbarFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-WindowTitleFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
-SmallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0,0
-SingleClick=false
-ShowToolTips=true
-AutoRaise=false
-AutoRaiseInterval=0
-CursorTheme=breeze_cursors
-CursorSize=24
-WidgetStyle=Breeze
-ColorScheme=BreezeDark
-
-[Locale]
-Language=en_US
-Country=US
-
-[Icons]
-Theme=Breeze
-
-[KCM]
-InitCommands=
-
-[ScreenSaver]
-Default=org.kde.plasma.abstractwallpaper
-
-[Session]
-Default=plasma
-EOF
-
-    # kwinrc
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-skel/.config/kwinrc" <<'EOF'
-[Compositing]
-Enabled=true
-GLPlatformInterface=auto
-GLTextureFilter=1
-GLCoreProfile=false
-OpenGLIsUnsafe=false
-MaxFPS=120
-RefreshRate=auto
-VSync=true
-RefreshRateEnabled=false
-
-[Effect-Blur]
-enabled=true
-
-[Effect-DesktopGrid]
-enabled=true
-
-[Effect-PresentWindows]
-enabled=true
-
-[Effect-Slide]
-enabled=true
-
-[Effect-SlideBack]
-enabled=true
-
-[Effect-WindowAperture]
-enabled=true
-
-[Plugins]
-enabledPlugins=blur,desktopgrid,presentwindows,slide,slideback,windowaperture,kwin4_effect_slide,kwin4_effect_slideback,kwin4_effect_windowaperture
-disabledPlugins=
-
-[TabBox]
-LayoutName=org.kde.breezedesk
-LayoutsList=org.kde.breezedesk,org.kde.breezecompact,org.kde.thumbnails
-
-[Windows]
-BorderlessMaximizedWindows=true
-ElectricBorderMaximize=true
-ElectricBorderTop=0
-ElectricBorderCornerRatio=0.25
-FocusPolicy=clickToFocus
-NextFocusPrefersMouse=false
-Placement=Smart
-RollOverDesktops=true
-SeparateScreenFocus=false
-SnapZone=10
-TitlebarDoubleClick=maximize
-WindowShade=off
-EOF
-
-    # plasmarc
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-skel/.config/plasmarc" <<'EOF'
-[PlasmaViews][Panel 1][Defaults]
-panelPosition=Bottom
-panelSize=40
-panelAlignment=Center
-panelBackground=default
-panelOpacity=255
-panelMargin=0
-iconSize=24
-thickness=40
-height=40
-autoHide=false
-alignment=Center
-length=100
-lengthUnit=Percent
-thicknessUnit=Pixels
-marginUnit=Pixels
-
-[Theme-amarok]
-name=Breeze
-useGlobalSettings=false
-
-[Theme-ksplash]
-name=Breeze
-useGlobalSettings=false
-
-[Theme-plasma]
-name=Breeze
-useGlobalSettings=false
-
-[Theme-Qt]
-name=Breeze
-useGlobalSettings=false
-
-[Theme-gtk2]
-name=Breeze
-useGlobalSettings=false
-
-[Theme-gtk3]
-name=Breeze
-useGlobalSettings=false
-EOF
-
-    # plasma-org.kde.plasma.desktop-appletsrc
-    install -m644 /dev/stdin "$pkgdir/usr/share/nexus-skel/.config/plasma-org.kde.plasma.desktop-appletsrc" <<'EOF'
-[ActionPlugins]
-RightButton;NoModifier=contextmenu
-Wheel:Vertical;NoModifier=switchdesktop
-
-[Containments][1]
-activityId=
-formfactor=2
-immutability=1
-lastScreen=0
-location=0
-wallpaperplugin=org.kde.image
-wallpaperpluginmode=SingleImage
-zvalue=0
-
-[Containments][1][Wallpaper][org.kde.image][General]
-FillMode=PreserveAspectCrop
-Image=/usr/share/backgrounds/nexus/default.png
-
-[Containments][1][Applets][2]
-immutability=1
-plugin=org.kde.plasma.panel
-
-[Containments][1][Applets][2][Configuration][ConfigDialog]
-DialogHeight=540
-DialogWidth=720
-
-[Containments][1][Applets][2][Configuration][General]
-alignment=Center
-itemAlignment=Center
-margin=0
-maximumSize=0
-minimumSize=0
-offset=0
-panelPosition=Bottom
-panelSize=40
-thickness=40
-height=40
-autoHide=false
-alignment=Center
-length=100
-lengthUnit=Percent
-thicknessUnit=Pixels
-marginUnit=Pixels
-
-[Containments][1][Applets][2][Applets][3]
-immutability=1
-plugin=org.kde.plasma.kickoff
-
-[Containments][1][Applets][2][Applets][4]
-immutability=1
-plugin=org.kde.plasma.systemtray
-
-[Containments][1][Applets][2][Applets][5]
-immutability=1
-plugin=org.kde.plasma.digitalclock
-
-[Containments][1][Applets][2][Applets][6]
-immutability=1
-plugin=org.kde.plasma.showdesktop
-
-[Containments][2]
-activityId=
-formfactor=0
-immutability=1
-lastScreen=0
-location=0
-wallpaperplugin=org.kde.image
-wallpaperpluginmode=SingleImage
-zvalue=0
-
-[Containments][2][Wallpaper][org.kde.image][General]
-FillMode=PreserveAspectCrop
-Image=/usr/share/backgrounds/nexus/default.png
-
-[General]
-immutability=1
-EOF
+    install -m644 kdeglobals "$pkgdir/usr/share/nexus-skel/.config/kdeglobals"
+    install -m644 kwinrc "$pkgdir/usr/share/nexus-skel/.config/kwinrc"
+    install -m644 plasmarc "$pkgdir/usr/share/nexus-skel/.config/plasmarc"
+    install -m644 plasma-org.kde.plasma.desktop-appletsrc "$pkgdir/usr/share/nexus-skel/.config/plasma-org.kde.plasma.desktop-appletsrc"
 
     # Look-and-feel theme "Nexus" for lookandfeeltool
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/metadata.json" <<'EOF'
-{
-    "Name": "Nexus",
-    "Comment": "Nexus Linux default look and feel",
-    "Icon": "preferences-desktop-theme",
-    "Author": "Nexus Linux Team",
-    "Version": "1.0",
-    "Website": "https://nexuslinux.org",
-    "License": "GPL-3.0-or-later"
-}
-EOF
-
+    install -m644 metadata.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/metadata.json"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors/BreezeDark.colors" <<'EOF'
-[ColorEffects:Disabled]
-Color=#232629
-ColorAmount=0.3
-ColorEffect=2
-Contrast=0.3
-ContrastAmount=0.25
-Intensity=0
-
-[ColorEffects:Inactive]
-ChangeSelectionColor=false
-Color=#1a1a2e
-ColorAmount=0
-ColorEffect=0
-Contrast=0
-ContrastAmount=0
-Intensity=0
-
-[Colors:Button]
-BackgroundAlternate=#0f0f1a
-BackgroundNormal=#1a1a2e
-DecorationFocus=#1793d1
-DecorationHover=#1e9fd8
-ForegroundActive=#ffffff
-ForegroundInactive=#7f848e
-ForegroundLink=#1793d1
-ForegroundNegative=#ed1515
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#27ae60
-ForegroundVisited=#9b59b6
-
-[Colors:Complementary]
-BackgroundAlternate=#0f0f1a
-BackgroundNormal=#1a1a2e
-DecorationFocus=#1793d1
-DecorationHover=#1e9fd8
-ForegroundActive=#ffffff
-ForegroundInactive=#7f848e
-ForegroundLink=#1793d1
-ForegroundNegative=#ed1515
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#27ae60
-ForegroundVisited=#9b59b6
-
-[Colors:Selection]
-BackgroundAlternate=#1793d1
-BackgroundNormal=#1793d1
-DecorationFocus=#ffffff
-DecorationHover=#ffffff
-ForegroundActive=#ffffff
-ForegroundInactive=#ffffff
-ForegroundLink=#ffffff
-ForegroundNegative=#ffffff
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#ffffff
-ForegroundVisited=#ffffff
-
-[Colors:Tooltip]
-BackgroundAlternate=#1a1a2e
-BackgroundNormal=#1a1a2e
-DecorationFocus=#1793d1
-DecorationHover=#1e9fd8
-ForegroundActive=#ffffff
-ForegroundInactive=#7f848e
-ForegroundLink=#1793d1
-ForegroundNegative=#ed1515
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#27ae60
-ForegroundVisited=#9b59b6
-
-[Colors:View]
-BackgroundAlternate=#0f0f1a
-BackgroundNormal=#1a1a2e
-DecorationFocus=#1793d1
-DecorationHover=#1e9fd8
-ForegroundActive=#ffffff
-ForegroundInactive=#7f848e
-ForegroundLink=#1793d1
-ForegroundNegative=#ed1515
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#27ae60
-ForegroundVisited=#9b59b6
-
-[Colors:Window]
-BackgroundAlternate=#0f0f1a
-BackgroundNormal=#1a1a2e
-DecorationFocus=#1793d1
-DecorationHover=#1e9fd8
-ForegroundActive=#ffffff
-ForegroundInactive=#7f848e
-ForegroundLink=#1793d1
-ForegroundNegative=#ed1515
-ForegroundNeutral=#ffffff
-ForegroundNormal=#ffffff
-ForegroundPositive=#27ae60
-ForegroundVisited=#9b59b6
-
-[General]
-ColorScheme=BreezeDark
-shadeSortColumn=true
-EOF
-
+    install -m644 colors/BreezeDark.colors "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors/BreezeDark.colors"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts/fonts.json" <<'EOF'
-{
-    "fixed": {
-        "family": "Noto Sans Mono",
-        "size": 10
-    },
-    "general": {
-        "family": "Noto Sans",
-        "size": 10
-    },
-    "menu": {
-        "family": "Noto Sans",
-        "size": 10
-    },
-    "smallestReadable": {
-        "family": "Noto Sans",
-        "size": 8
-    },
-    "taskbar": {
-        "family": "Noto Sans",
-        "size": 10
-    },
-    "titleBar": {
-        "family": "Noto Sans",
-        "size": 10
-    },
-    "windowTitle": {
-        "family": "Noto Sans",
-        "size": 10
-    }
-}
-EOF
-
+    install -m644 fonts/fonts.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts/fonts.json"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons/icons.json" <<'EOF'
-{
-    "theme": "Breeze"
-}
-EOF
-
-    # Plasma style metadata
+    install -m644 icons/icons.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons/icons.json"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/plasma"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/plasma/desktoptheme.json" <<'EOF'
-{
-    "name": "Breeze",
-    "version": "1.0"
-}
-EOF
-
+    install -m644 plasma/desktoptheme.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/plasma/desktoptheme.json"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/splash"
-    install -m644 /dev/stdin "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/splash/Splash.qml" <<'EOF'
-import QtQuick 2.15
-import QtQuick.Window 2.15
+    install -m644 splash/Splash.qml "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/splash/Splash.qml"
 
-Window {
-    width: 800
-    height: 600
-    visible: true
-    title: "Nexus Linux"
-    color: "#1a1a2e"
-
-    Rectangle {
-        anchors.centerIn: parent
-        width: 160
-        height: 160
-        radius: 80
-        color: "#1793d1"
-    }
-
-    Text {
-        anchors.centerIn: parent
-        text: "Nexus Linux"
-        font.pixelSize: 24
-        font.bold: true
-        color: "white"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 200
-    }
-
-    Text {
-        anchors.centerIn: parent
-        text: "Pure Arch Based"
-        font.pixelSize: 16
-        color: "#888888"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 240
-    }
-}
-EOF
-EOF
+    # Look-and-feel theme "Nexus" for lookandfeeltool (legacy path)
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents"
+    install -m644 metadata.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/metadata.json"
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors"
+    install -m644 colors/BreezeDark.colors "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors/BreezeDark.colors"
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts"
+    install -m644 fonts/fonts.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts/fonts.json"
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons"
+    install -m644 icons/icons.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons/icons.json"
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/plasma"
+    install -m644 plasma/desktoptheme.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/plasma/desktoptheme.json"
+    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/splash"
+    install -m644 splash/Splash.qml "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/splash/Splash.qml"
 }

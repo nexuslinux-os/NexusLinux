@@ -1,0 +1,16 @@
+#!/bin/bash
+# Write Nexus Linux os-release for installed system
+set -e
+
+ROOT="${1:-/}"
+cat > "${ROOT}/etc/os-release" <<'EOS'
+NAME="Nexus Linux"
+PRETTY_NAME="Nexus Linux"
+ID=nexus
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://nexuslinux.org"
+SUPPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
+BUG_REPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
+EOS

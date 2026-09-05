@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: no
+# SPDX-License-Identifier: CC0-1.0
+---
+sequence:
+  - show:
+      - welcome
+      - locale
+      - keyboard
+      - packagechooser@bootloader
+      - partition
+      - packagechooser@desktop
+      - netinstall
+      - users
+      - summary
+  - exec:
+      - partition
+      - zfs
+      - mount
+      - unpackfs
+      - machineid
+      - fstab
+      - locale
+      - keyboard
+      - localecfg
+      - luksbootkeyfile
+      - luksopenswaphookcfg
+      - initcpiocfg
+      - initcpio
+      - zfshostid
+      - removeuser
+      - users
+      - networkcfg
+      - displaymanager
+      - packages@offline
+      - hwclock
+      - bootloader
+      - shellprocess@before
+      - services-systemd
+      - shellprocess
+      - umount
+  - show:
+      - finished
+
+branding: nexus
+
+prompt-install: true
+
+dont-chroot: false
+
+oem-setup: false
+
+disable-cancel: false
+
+disable-cancel-during-exec: false
+
+hide-back-and-next-during-exec: true
+
+quit-at-end: false

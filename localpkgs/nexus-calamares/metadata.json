@@ -1,0 +1,9 @@
+{
+    "Name": "Nexus",
+    "Comment": "Nexus Linux default look and feel",
+    "Icon": "preferences-desktop-theme",
+    "Author": "Nexus Linux Team",
+    "Version": "1.0",
+    "Website": "https://nexuslinux.org",
+    "License": "GPL-3.0-or-later"
+}

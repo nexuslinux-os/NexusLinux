@@ -1,0 +1,28 @@
+{
+    "componentName": "nexus",
+    "version": "1.0",
+    "showHeader": true,
+    "showFooter": true,
+    "style": {
+        "background": "#1a1a2e",
+        "backgroundColor": "#1a1a2e",
+        "fontColor": "#ffffff",
+        "progressBar": {
+            "backgroundColor": "#0f0f1a",
+            "borderColor": "#1793d1",
+            "color": "#1793d1"
+        },
+        "sidebar": {
+            "backgroundColor": "#1a1a2e",
+            "borderColor": "#1793d1",
+            "fontColor": "#ffffff",
+            "selectedColor": "#1793d1",
+            "selectedFontColor": "#ffffff"
+        },
+        "mainWindow": {
+            "backgroundColor": "#1a1a2e",
+            "borderColor": "#1793d1",
+            "fontColor": "#ffffff"
+        }
+    }
+}
