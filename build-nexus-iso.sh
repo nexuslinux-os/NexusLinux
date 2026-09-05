@@ -34,7 +34,7 @@ sudo pacman -S --needed --noconfirm \
     vulkan-headers
 
 # Reinstall cmake after jsoncpp update to fix libjsoncpp.so.26 linkage
-sudo pacman -S --needed --noconfirm --overwrite '*' cmake
+sudo pacman -S --needed --noconfirm --overwrite /usr/lib/libjsoncpp.so.26 cmake
 sudo ldconfig
 
 command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }

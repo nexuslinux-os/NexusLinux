@@ -4,7 +4,6 @@
   selected: true
   critical: true
   packages:
-     - nexus-hooks
      - nexus-keyring
      - nexus-mirrorlist
      - nexus-v3-mirrorlist
@@ -37,7 +36,6 @@
   packages:
      - nexus-kernel-manager
      - nexus-packageinstaller
-     - nexus-settings
      - nexus-micro-settings
      - nexus-wallpapers
      - nexus-kde-settings

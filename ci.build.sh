@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 pacman --noconfirm -Syu --needed base-devel archiso mkinitcpio-archiso git squashfs-tools
 

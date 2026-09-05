@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env sh
+set -euo pipefail
 # borrowed from manjaro livecd
 
 xdg=$(xdg-user-dir DESKTOP)

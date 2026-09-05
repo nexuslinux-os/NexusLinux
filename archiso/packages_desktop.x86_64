@@ -17,6 +17,7 @@ nexus-branding
 nexus-wallpapers
 nexus-keyring
 nexus-calamares
+nexus-kde-settings
 clamav
 clamtk
 clonezilla
@@ -102,7 +103,6 @@ system-config-printer
 simple-scan
 sane
 sane-airscan
-avahi
 nss-mdns
 mdadm
 lsb-release

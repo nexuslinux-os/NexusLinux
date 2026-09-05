@@ -6,35 +6,14 @@ pkgdesc="Nexus Linux branding files"
 arch=(any)
 url="https://github.com/nexuslinux-os/NexusLinux"
 license=(GPL-3.0-or-later)
+source=(os-release lsb-release)
+sha256sums=('SKIP' 'SKIP')
+
 package() {
-    install -Dm644 /dev/stdin "$pkgdir/etc/os-release" <<'EOF'
-NAME="Nexus Linux"
-PRETTY_NAME="Nexus Linux"
-ID=nexus
-ID_LIKE=arch
-BUILD_ID=rolling
-ANSI_COLOR="38;2;23;147;209"
-HOME_URL="https://nexuslinux.org"
-SUPPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-BUG_REPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-EOF
-
-    install -Dm644 /dev/stdin "$pkgdir/etc/lsb-release" <<'EOF'
-LSB_VERSION=1.4
-DISTRIB_ID=Nexus
-DISTRIB_RELEASE=rolling
-DISTRIB_DESCRIPTION="Nexus Linux"
-EOF
-
-    install -Dm644 /dev/stdin "$pkgdir/usr/lib/os-release" <<'EOF'
-NAME="Nexus Linux"
-PRETTY_NAME="Nexus Linux"
-ID=nexus
-ID_LIKE=arch
-BUILD_ID=rolling
-ANSI_COLOR="38;2;23;147;209"
-HOME_URL="https://nexuslinux.org"
-SUPPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-BUG_REPORT_URL="https://github.com/nexuslinux-os/NexusLinux/issues"
-EOF
+    # Install os-release (primary)
+    install -Dm644 os-release "$pkgdir/etc/os-release"
+    install -Dm644 os-release "$pkgdir/usr/lib/os-release"
+    
+    # Install lsb-release
+    install -Dm644 lsb-release "$pkgdir/etc/lsb-release"
 }

@@ -1,0 +1,67 @@
+[General]
+widgetStyle=Breeze
+colorScheme=BreezeDark
+font=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+fixed=Noto Sans Mono,10,-1,5,50,0,0,0,0,0,0
+menuFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+taskbarFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+windowTitleFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+smallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0,0
+singleClick=false
+showToolTips=true
+autoRaise=false
+autoRaiseInterval=0
+cursorTheme=breeze_cursors
+cursorSize=24
+wheelScrollLines=3
+showMenuIcons=true
+showMenuShortcuts=true
+showShortcutKeysInTooltips=true
+askForConfirmation=false
+toolBarIconStyle=IconsOnly
+toolBarIconSize=Medium
+animationDurationFactor=1.0
+allowWheelToSwitchDesktop=true
+applicationIconsTheme=Breeze
+
+[KDE]
+SingleClick=false
+DoubleClickInterval=400
+WheelScrollLines=3
+ShowToolTips=true
+AutoRaise=false
+AutoRaiseInterval=0
+CursorTheme=breeze_cursors
+CursorSize=24
+WidgetStyle=Breeze
+ColorScheme=BreezeDark
+Font=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+Fixed=Noto Sans Mono,10,-1,5,50,0,0,0,0,0,0
+MenuFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+TaskbarFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+WindowTitleFont=Noto Sans,10,-1,5,50,0,0,0,0,0,0
+SmallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0,0
+SingleClick=false
+ShowToolTips=true
+AutoRaise=false
+AutoRaiseInterval=0
+CursorTheme=breeze_cursors
+CursorSize=24
+WidgetStyle=Breeze
+ColorScheme=BreezeDark
+
+[Locale]
+Language=en_US
+Country=US
+
+[Icons]
+Theme=Breeze
+
+[KCM]
+InitCommands=
+
+[ScreenSaver]
+Default=org.kde.plasma.abstractwallpaper
+
+[Session]
+Default=plasma

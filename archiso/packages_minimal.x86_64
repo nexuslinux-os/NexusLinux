@@ -14,8 +14,7 @@ nexus-branding
 nexus-wallpapers
 nexus-keyring
 nexus-calamares
-clamav
-clamtk
+nexus-kde-settings
 cryptsetup
 darkhttpd
 dhcpcd
@@ -55,7 +54,6 @@ libusb-compat
 libwnck3
 linux-zen
 linux-zen-headers
-nvidia-dkms
 linux-firmware
 linux-firmware-marvell
 linux-firmware-qlogic
@@ -74,14 +72,6 @@ bluez
 bluez-utils
 bluez-plugins
 bluez-hid2hci
-cups
-cups-filters
-ghostscript
-gsfonts
-simple-scan
-sane
-sane-airscan
-avahi
 nss-mdns
 mdadm
 lsb-release
@@ -100,7 +90,6 @@ nilfs-utils
 noto-fonts
 nss-mdns
 ntfs-3g
-nvidia-utils
 nvme-cli
 open-vm-tools
 openssh
@@ -126,7 +115,6 @@ refind
 rsync
 rtkit
 rxvt-unicode-terminfo
-plasma-login-manager
 smbclient
 sof-firmware
 spectacle

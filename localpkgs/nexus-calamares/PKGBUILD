@@ -6,7 +6,7 @@ pkgdesc="Nexus Linux Calamares modules, branding, and configuration"
 arch=(any)
 url="https://github.com/nexuslinux-os/NexusLinux"
 license=(GPL-3.0-or-later)
-depends=(calamares)
+# No depends on calamares - it's built and installed separately as a package
 source=(branding.desc
         write-os-release.sh
         shellprocess.conf
