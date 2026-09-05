@@ -13,35 +13,15 @@ ROOT="$(pwd)"
 PROFILE="${1:-desktop}"
 LOCALREPO="$ROOT/localrepo"
 LOCALREPO_NAME="nexus"
+CALAMARES_VERSION="3.3.12"
+CALAMARES_PKGBUILD_DIR="$ROOT/.calamares-pkgbuild"
 
-for dep in mkarchiso repo-add; do
+for dep in mkarchiso repo-add makepkg; do
     command -v "$dep" >/dev/null 2>&1 || { echo "HATA: eksik bağımlılık: $dep" >&2; exit 1; }
 done
 
-# Build Calamares from source (not in official repos)
-build_calamares() {
-    echo "==> Building Calamares from source"
-    local TMPDIR=$(mktemp -d)
-    cd "$TMPDIR"
-    git clone --depth 1 --branch v3.3.12 https://github.com/calamares/calamares.git
-    cd calamares
-    mkdir build && cd build
-    cmake .. \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DINSTALL_CONFIG=ON \
-        -DSKIP_MODULES="webview interactiveterminal initramfs initramfscfg \
-            partition rawfs mount welcomeq license keyboard locale \
-            networkcfg displaymanager bootloader grub grubcfg efi_bootloader \
-            services-openrc services-systemd fstab fsck keyboardq summaryq usersq"
-    make -j$(nproc)
-    sudo make install
-    cd "$ROOT"
-    rm -rf "$TMPDIR"
-}
-
 # Install build dependencies FIRST (including Calamares build deps + pacman-contrib for repo-add)
-echo "==> [1/3] Installing build dependencies"
+echo "==> [1/4] Installing build dependencies"
 sudo pacman -S --needed --noconfirm \
     archiso base-devel git pacman-contrib \
     squashfs-tools dosfstools libisoburn \
@@ -55,22 +35,77 @@ sudo pacman -S --needed --noconfirm \
 
 # Reinstall cmake after jsoncpp update to fix libjsoncpp.so.26 linkage
 sudo pacman -S --needed --noconfirm --overwrite '*' cmake
-
-# Update library cache
 sudo ldconfig
 
-# makepkg comes from base-devel
 command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }
 
-# Prepare a clean local pacman repo directory for the nexus-* packages.
-# mkarchiso cannot "see" packages that only sit in /var/cache/pacman/pkg -
-# it needs a real repo database (repo-add) that pacman.conf points to.
+# Prepare a clean local pacman repo directory.
+# mkarchiso cannot "see" packages that only sit in /var/cache/pacman/pkg or on
+# the host filesystem - it needs a real repo database (repo-add) that
+# pacman.conf points to, containing ACTUAL .pkg.tar.zst files.
 echo "==> Preparing local pacman repo at $LOCALREPO"
 rm -rf "$LOCALREPO"
 mkdir -p "$LOCALREPO"
 
+# ---------------------------------------------------------------------------
+# Build Calamares AS A PACKAGE (not "sudo make install" onto the host).
+# mkarchiso builds the ISO in its own clean chroot and only knows about
+# packages available via pacman repos - it does not care what is installed
+# on the host machine. So Calamares must become a real .pkg.tar.zst that we
+# add to our local repo, exactly like nexus-branding etc.
+# ---------------------------------------------------------------------------
+build_calamares_package() {
+    echo "==> [2/4] Packaging Calamares $CALAMARES_VERSION"
+    rm -rf "$CALAMARES_PKGBUILD_DIR"
+    mkdir -p "$CALAMARES_PKGBUILD_DIR"
+    cat > "$CALAMARES_PKGBUILD_DIR/PKGBUILD" <<EOF
+pkgname=calamares
+pkgver=${CALAMARES_VERSION}
+pkgrel=1
+pkgdesc="Distribution-independent installer framework (Nexus trimmed build)"
+arch=('x86_64')
+url="https://calamares.io"
+license=('GPL3')
+depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'kconfig' 'kcoreaddons' 'kcrash'
+         'ki18n' 'kparts' 'kpmcore' 'kservice' 'kwidgetsaddons' 'libpwquality'
+         'polkit-qt6' 'yaml-cpp' 'boost-libs' 'python')
+makedepends=('git' 'cmake' 'extra-cmake-modules' 'qt6-tools' 'boost' 'jsoncpp')
+source=("git+https://github.com/calamares/calamares.git#tag=v\${pkgver}")
+sha256sums=('SKIP')
+
+
+build() {
+  cd "\$srcdir/calamares"
+  mkdir -p build && cd build
+  cmake .. \\
+    -DCMAKE_INSTALL_PREFIX=/usr \\
+    -DCMAKE_BUILD_TYPE=Release \\
+    -DINSTALL_CONFIG=ON \\
+    -DSKIP_MODULES="webview interactiveterminal initramfs initramfscfg \\
+        partition rawfs mount welcomeq license keyboard users usersq locale \\
+        networkcfg displaymanager bootloader grub grubcfg efi_bootloader \\
+        services-openrc services-systemd fstab fsck keyboardq summaryq"
+  make
+}
+
+
+package() {
+  cd "\$srcdir/calamares/build"
+  make DESTDIR="\$pkgdir" install
+}
+EOF
+    ( cd "$CALAMARES_PKGBUILD_DIR" && makepkg -sf --noconfirm --skippgpcheck )
+    cp -f "$CALAMARES_PKGBUILD_DIR"/calamares-*.pkg.tar.zst "$LOCALREPO/"
+}
+
+if ls "$LOCALREPO"/calamares-*.pkg.tar.zst >/dev/null 2>&1; then
+    echo "==> [2/4] Calamares paketi zaten localrepo'da, atlanıyor"
+else
+    build_calamares_package
+fi
+
 # Build local Nexus packages (branding, wallpapers, keyring, calamares config)
-echo "==> Building local Nexus packages"
+echo "==> [3/4] Building local Nexus packages"
 for pkg in nexus-branding nexus-wallpapers nexus-keyring nexus-calamares; do
     if [ -d "$ROOT/localpkgs/$pkg" ]; then
         echo "  building $pkg"
@@ -79,7 +114,7 @@ for pkg in nexus-branding nexus-wallpapers nexus-keyring nexus-calamares; do
     fi
 done
 
-# Build the repo database so pacman/mkarchiso can resolve nexus-* as install targets
+# Build the repo database so pacman/mkarchiso can resolve these as install targets
 echo "==> Building local repo database ($LOCALREPO_NAME.db.tar.gz)"
 ( cd "$LOCALREPO" && repo-add --new "$LOCALREPO_NAME.db.tar.gz" ./*.pkg.tar.zst )
 
@@ -104,12 +139,7 @@ else
     echo "==> [$LOCALREPO_NAME] repo zaten pacman.conf içinde, atlanıyor"
 fi
 
-# Build Calamares from source AFTER deps are installed
-# Always build from source to ensure Nexus branding and avoid CachyOS package
-echo "==> [2/3] Building Calamares from source"
-build_calamares
-
-echo "==> [3/3] Building ISO (profile: $PROFILE)"
+echo "==> [4/4] Building ISO (profile: $PROFILE)"
 
 # Relocate any stray calamares module copies to staging path
 CALAMARES_CONFLICT="$ROOT/archiso/airootfs/etc/calamares/modules"
