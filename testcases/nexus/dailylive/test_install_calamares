@@ -1,13 +1,13 @@
-# Install CachyOS daily live
+# Install Nexus daily live
 
 function test_description() {
     cat << EOF
-Do a clean install of CachyOS using all the defaults
+Do a clean install of Nexus using all the defaults
 EOF
 }
 
 function test_setup() {
-    test_user="cachyos"
+    test_user="nexus"
     test_password="ILoveCandy"
 }
 
@@ -41,7 +41,7 @@ function test_post_boot_grub() {
 }
 
 function test_launch_calamares() {
-    qt_wait_for_text "$FUNCNAME" "Welcome to CachyOS!" 3 60
+    qt_wait_for_text "$FUNCNAME" "Welcome to Nexus!" 3 60
     qt_screenshot_ppm "$FUNCNAME"
     qt_send_key_combo "alt-f2"
     qt_wait_for_seconds 2
