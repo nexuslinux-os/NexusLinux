@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="readme-banner.svg" alt="Nexus Linux Banner" width="100%">
+</p>
+
 # Nexus Linux
 
 A Linux distribution built on **pure Arch Linux** with `archiso`. Nexus Linux ships the KDE Plasma desktop, the Calamares installer (offline and online), and its own repository of packages with Nexus branding.
