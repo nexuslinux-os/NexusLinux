@@ -1,0 +1,26 @@
+{
+  "recommendations": [
+    "foxundermoon.shellcheck",
+    "timonwong.shellcheck",
+    "redhat.vscode-yaml",
+    "redhat.vscode-xml",
+    "ms-vscode.makefile-tools",
+    "timonwong.shellcheck",
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-ssh",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode.powershell",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree",
+    "alefragnani.bookmarks",
+    "oderwat.indent-rainbow",
+    "pkief.material-icon-theme"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "dbaeumer.vscode-eslint"
+  ]
+}

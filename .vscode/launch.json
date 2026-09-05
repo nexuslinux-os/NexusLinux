@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Build ISO (Desktop)",
+      "type": "bashdb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build-nexus-iso.sh",
+      "args": ["desktop"],
+      "cwd": "${workspaceFolder}",
+      "terminalKind": "integrated",
+      "env": {}
+    },
+    {
+      "name": "Build ISO (Minimal)",
+      "type": "bashdb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build-nexus-iso.sh",
+      "args": ["minimal"],
+      "cwd": "${workspaceFolder}",
+      "terminalKind": "integrated",
+      "env": {}
+    },
+    {
+      "name": "Build Local Package",
+      "type": "bashdb",
+      "request": "launch",
+      "program": "/usr/bin/makepkg",
+      "args": ["-sf", "--noconfirm", "--skippgpcheck"],
+      "cwd": "${workspaceFolder}/localpkgs/${input:packageName}",
+      "terminalKind": "integrated"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "packageName",
+      "type": "pickString",
+      "description": "Select package to build",
+      "options": [
+        "nexus-branding",
+        "nexus-wallpapers",
+        "nexus-keyring",
+        "nexus-calamares"
+      ],
+      "default": "nexus-branding"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "Bash Strict Mode": {
+    "prefix": "bash-strict",
+    "body": [
+      "#!/usr/bin/env bash",
+      "set -e",
+      "set -o pipefail",
+      "",
+      "${0}"
+    ],
+    "description": "Bash strict mode boilerplate"
+  },
+  "Bash Function": {
+    "prefix": "bash-func",
+    "body": [
+      "${1:func_name}() {",
+      "  local ${2:var}=\"${3:value}\"",
+      "  ${0}",
+      "}"
+    ],
+    "description": "Bash function template"
+  },
+  "Bash Error Handler": {
+    "prefix": "bash-error",
+    "body": [
+      "error_handler() {",
+      "  echo \"Error on line $1\" >&2",
+      "  exit 1",
+      "}",
+      "trap 'error_handler $LINENO' ERR",
+      ""
+    ],
+    "description": "Bash error handling trap"
+  },
+  "Makepkg Command": {
+    "prefix": "makepkg",
+    "body": [
+      "makepkg -sf --noconfirm --skippgpcheck"
+    ],
+    "description": "Standard makepkg command for local packages"
+  },
+  "Repo Add": {
+    "prefix": "repo-add",
+    "body": [
+      "repo-add --new ${1:repo}.db.tar.gz ./*.pkg.tar.zst"
+    ],
+    "description": "Create pacman repo database"
+  },
+  "Pacman Install": {
+    "prefix": "pacman-install",
+    "body": [
+      "sudo pacman -S --needed --noconfirm ${1:package}"
+    ],
+    "description": "Install packages with pacman"
+  },
+  "Git Clone Shallow": {
+    "prefix": "git-clone",
+    "body": [
+      "git clone --depth 1 --branch ${1:branch} ${2:url} ${3:dir}"
+    ],
+    "description": "Shallow git clone with branch"
+  },
+  "Find and Copy": {
+    "prefix": "find-copy",
+    "body": [
+      "find ${1:src} -name \"${2:pattern}\" -exec cp -t ${3:dest} {} +"
+    ],
+    "description": "Find files and copy to destination"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build ISO (Desktop)",
+      "type": "shell",
+      "command": "./build-nexus-iso.sh",
+      "args": ["desktop"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Build full desktop ISO"
+    },
+    {
+      "label": "Build ISO (Minimal)",
+      "type": "shell",
+      "command": "./build-nexus-iso.sh",
+      "args": ["minimal"],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Build minimal ISO"
+    },
+    {
+      "label": "Build All Local Packages",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for pkg in nexus-branding nexus-wallpapers nexus-keyring nexus-calamares; do (cd localpkgs/$pkg && makepkg -sf --noconfirm --skippgpcheck); done"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Build all local Nexus packages"
+    },
+    {
+      "label": "Build Single Package",
+      "type": "shell",
+      "command": "makepkg",
+      "args": ["-sf", "--noconfirm", "--skippgpcheck"],
+      "options": {
+        "cwd": "${workspaceFolder}/localpkgs/${input:packageName}"
+      },
+      "problemMatcher": [],
+      "detail": "Build a single local package"
+    },
+    {
+      "label": "Build Calamares Package",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd .calamares-pkgbuild && makepkg -sf --noconfirm --skippgpcheck && cp *.pkg.tar.zst ../localrepo/"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Build Calamares package from source"
+    },
+    {
+      "label": "Create Local Repo Database",
+      "type": "shell",
+      "command": "repo-add",
+      "args": ["--new", "nexus.db.tar.gz", "*.pkg.tar.zst"],
+      "options": {
+        "cwd": "${workspaceFolder}/localrepo"
+      },
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Create local pacman repo database"
+    },
+    {
+      "label": "Clean Build Artifacts",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "rm -rf build out localrepo .calamares-pkgbuild *.pkg.tar.zst *.pkg.tar.zst.sig"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "detail": "Clean all build artifacts"
+    },
+    {
+      "label": "Lint Shell Scripts",
+      "type": "shell",
+      "command": "shellcheck",
+      "args": [
+        "build-nexus-iso.sh",
+        "buildiso.sh",
+        "util-iso.sh",
+        "archiso/airootfs/root/customize_airootfs.sh",
+        "archiso/airootfs/usr/local/bin/calamares-offline.sh",
+        "archiso/airootfs/usr/local/bin/calamares-online.sh",
+        "archiso/airootfs/usr/local/bin/launch-calamares.sh"
+      ],
+      "group": "test",
+      "problemMatcher": ["$shellcheck"],
+      "detail": "Lint all shell scripts with shellcheck"
+    },
+    {
+      "label": "Validate PKGBUILDs",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for pkg in localpkgs/*/; do echo \"Checking $(basename $pkg)...\" && cd $pkg && namcap PKGBUILD 2>/dev/null || echo \"namcap not installed\"; done"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "detail": "Validate all PKGBUILD files with namcap"
+    },
+    {
+      "label": "Update Git Submodules",
+      "type": "shell",
+      "command": "git",
+      "args": ["submodule", "update", "--init", "--recursive"],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Update git submodules"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "packageName",
+      "type": "pickString",
+      "description": "Select package to build",
+      "options": [
+        "nexus-branding",
+        "nexus-wallpapers",
+        "nexus-keyring",
+        "nexus-calamares"
+      ],
+      "default": "nexus-branding"
+    }
+  ]
+}

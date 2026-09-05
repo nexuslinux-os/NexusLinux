@@ -1,0 +1,45 @@
+{
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.rulers": [100, 120],
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/build": true,
+    "**/out": true,
+    "**/localrepo": true,
+    "**/.calamares-pkgbuild": true,
+    "**/*.pkg.tar.zst": true,
+    "**/*.pkg.tar.zst.sig": true,
+    "**/.git": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/out": true,
+    "**/localrepo": true,
+    "**/.calamares-pkgbuild": true,
+    "*.pkg.tar.zst": true
+  },
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "bash",
+      "args": [],
+      "icon": "terminal-bash"
+    }
+  },
+  "shellcheck.enable": true,
+  "shellcheck.run": "onType",
+  "shellcheck.executablePath": "shellcheck",
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  },
+  "markdown.preview.breaks": true,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "workbench.tree.indent": 16,
+  "explorer.compactFolders": false
+}
