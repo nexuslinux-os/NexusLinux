@@ -1,0 +1,15 @@
+[package]
+name = "nexus-micro"
+version = "0.1.0"
+edition = "2021"
+description = "Nexus Linux micro settings utilities"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/nexuslinux-os/NexusLinux"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+nix = { version = "0.27", features = ["default"] }

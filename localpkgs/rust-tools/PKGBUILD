@@ -1,0 +1,108 @@
+# Maintainer: Nexus Linux <nexus@nexuslinux.org>
+pkgbase=nexus-rust-tools
+pkgname=(
+    nexus-info
+    nexus-version
+    nexus-check
+    nexus-hardware
+    nexus-micro
+    nexus-installer
+    nexus-theme
+    nexus-build
+)
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Nexus Linux Rust-based system utilities"
+arch=(x86_64)
+url="https://github.com/nexuslinux-os/NexusLinux"
+license=(GPL-3.0-or-later)
+makedepends=(
+    rust
+    cargo
+)
+source=(
+    "git+https://github.com/nexuslinux-os/NexusLinux.git#tag=v${pkgver}"
+)
+sha256sums=('SKIP')
+
+prepare() {
+    cd "${srcdir}/NexusLinux/localpkgs/rust-workspace"
+    cargo fetch --locked --target x86_64-unknown-linux-gnu
+}
+
+build() {
+    cd "${srcdir}/NexusLinux/localpkgs/rust-workspace"
+    cargo build --release --frozen --workspace
+}
+
+package_nexus-info() {
+    pkgdesc="System information display for Nexus Linux"
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-info" \
+        "${pkgdir}/usr/bin/nexus-info"
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/man/man1/nexus-info.1" <<'EOF'
+.NEXUS-INFO(1) Nexus Linux Manual
+.SH NAME
+nexus-info \- display system information
+.SH SYNOPSIS
+.B nexus-info
+[\-j] [\-s SECTION]
+.SH DESCRIPTION
+Display detailed system information for Nexus Linux.
+.SH OPTIONS
+.TP
+.B \-j, \-\-json
+Output as JSON
+.TP
+.B \-s, \-\-section SECTION
+Show only specific section
+EOF
+}
+
+package_nexus-version() {
+    pkgdesc="Nexus Linux version information tool"
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-version" \
+        "${pkgdir}/usr/bin/nexus-version"
+}
+
+package_nexus-check() {
+    pkgdesc="Nexus Linux system health check tool"
+    depends=(sysinfo)
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-check" \
+        "${pkgdir}/usr/bin/nexus-check"
+}
+
+package_nexus-hardware() {
+    pkgdesc="Nexus Linux hardware detection utility"
+    depends=(sysinfo nix)
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-hardware" \
+        "${pkgdir}/usr/bin/nexus-hardware"
+}
+
+package_nexus-micro() {
+    pkgdesc="Nexus Linux micro settings utilities"
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-micro" \
+        "${pkgdir}/usr/bin/nexus-micro"
+    install -Dm644 "${srcdir}/NexusLinux/localpkgs/rust-workspace/nexus-micro/nexus-micro.1" \
+        "${pkgdir}/usr/share/man/man1/nexus-micro.1" 2>/dev/null || true
+}
+
+package_nexus-installer() {
+    pkgdesc="Nexus Linux package installer backend"
+    depends=(alpm)
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-installer" \
+        "${pkgdir}/usr/bin/nexus-installer"
+}
+
+package_nexus-theme() {
+    pkgdesc="Nexus Linux theme and wallpaper utilities"
+    depends=(image walkdir)
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-theme" \
+        "${pkgdir}/usr/bin/nexus-theme"
+}
+
+package_nexus-build() {
+    pkgdesc="Nexus Linux build helpers and validation tools"
+    depends=(toml walkdir sha2 colored indicatif)
+    install -Dm755 "${srcdir}/NexusLinux/localpkgs/rust-workspace/target/release/nexus-build" \
+        "${pkgdir}/usr/bin/nexus-build"
+}

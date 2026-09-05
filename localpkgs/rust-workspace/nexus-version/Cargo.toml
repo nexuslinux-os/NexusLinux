@@ -1,0 +1,14 @@
+[package]
+name = "nexus-version"
+version = "0.1.0"
+edition = "2021"
+description = "Nexus Linux version information tool"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/nexuslinux-os/NexusLinux"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }

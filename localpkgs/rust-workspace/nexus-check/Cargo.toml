@@ -1,0 +1,17 @@
+[package]
+name = "nexus-check"
+version = "0.1.0"
+edition = "2021"
+description = "Nexus Linux system health check tool"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/nexuslinux-os/NexusLinux"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sysinfo = { workspace = true }
+thiserror = { workspace = true }
+colored = { workspace = true }
+indicatif = { workspace = true }

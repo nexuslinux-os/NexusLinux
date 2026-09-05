@@ -1,0 +1,16 @@
+[package]
+name = "nexus-info"
+version = "0.1.0"
+edition = "2021"
+description = "System information display for Nexus Linux boot welcome"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/nexuslinux-os/NexusLinux"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+colored = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sysinfo = { workspace = true }
+thiserror = { workspace = true }
