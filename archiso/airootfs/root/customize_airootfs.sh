@@ -16,15 +16,29 @@ fi
 if [ -f /usr/share/calamares/settings_online.conf ]; then
     install -Dm644 /usr/share/calamares/settings_online.conf /etc/calamares/settings.conf
 fi
+
+# welcome.conf / shellprocess-before.conf / users.conf are NOT part of the
+# nexus-calamares override package - Calamares ships its own defaults for
+# these under /usr/share/calamares/modules/. Calamares treats
+# /etc/calamares/modules/ as an override layer: if a file isn't there, the
+# /usr/share default is used untouched (and sed-ing a nonexistent /etc file
+# fails the whole build). So before sed'ing, make sure an editable copy
+# exists in /etc first, copying the shipped default if needed.
+CALAMARES_DEFAULTS=/usr/share/calamares/modules
+CALAMARES_ETC=/etc/calamares/modules
+mkdir -p "$CALAMARES_ETC"
+for conf in welcome.conf shellprocess-before.conf users.conf; do
+    if [ ! -f "$CALAMARES_ETC/$conf" ] && [ -f "$CALAMARES_DEFAULTS/$conf" ]; then
+        install -Dm644 "$CALAMARES_DEFAULTS/$conf" "$CALAMARES_ETC/$conf"
+    fi
+done
+
 sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/welcome.conf
 sed -i 's/CachyOS/Nexus Linux/g' /etc/calamares/modules/shellprocess-before.conf
 sed -i 's/cachyos-${cpu}/nexus-${cpu}/' /etc/calamares/modules/users.conf
 
 # Apply the Nexus Look-and-Feel global theme BEFORE skeleton copy.
-# lookandfeeltool writes its own plasma-org.kde.plasma.desktop-appletsrc which
-# resets the wallpaper to the theme default (or Breeze fallback). By running
-# this BEFORE we overwrite the skeleton, our Nexus wallpaper config takes
-# precedence and survives the theme application.
+# We now ship a complete "Nexus" look-and-feel theme in the nexus-calamares package.
 if command -v lookandfeeltool &>/dev/null; then
     QT_QPA_PLATFORM=offscreen lookandfeeltool -a Nexus || echo "WARNING: lookandfeeltool -a Nexus failed"
 fi
