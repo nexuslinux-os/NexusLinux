@@ -1,0 +1,17 @@
+post_install() {
+    # Apply Nexus KDE settings to live user if exists
+    if [ -d /home/liveuser ]; then
+        mkdir -p /home/liveuser/.config
+        cp -f /usr/share/nexus-kde-settings/* /home/liveuser/.config/ 2>/dev/null || true
+        chown -R liveuser:liveuser /home/liveuser/.config 2>/dev/null || true
+    fi
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    # Don't remove configs on package removal
+    true
+}

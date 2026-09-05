@@ -12,11 +12,14 @@ package() {
     
     # Create placeholder keyring files
     # In production, replace with actual Nexus master key
+    # Generate with: gpg --full-generate-key (RSA 4096, no expiry)
+    # Then: gpg --export --armor "Nexus Linux Packaging" > nexus.gpg
     install -Dm644 /dev/stdin "$pkgdir/usr/share/pacman/keyrings/nexus.gpg" <<'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-# Placeholder - replace with actual Nexus master key
+# PLACEHOLDER - Replace with actual Nexus master key
 # Generate with: gpg --full-generate-key (RSA 4096, no expiry)
 # Then: gpg --export --armor "Nexus Linux Packaging" > nexus.gpg
+# DO NOT USE THIS PLACEHOLDER IN PRODUCTION
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
     
@@ -26,6 +29,7 @@ EOF
 # Format: <fingerprint>:<ownertrust>
 # Example: F4C57604C90E90CD6AB3633F2AA4846E14CBE512:4:
 # Add actual fingerprint after generating the key
+# Generate fingerprint with: gpg --fingerprint "Nexus Linux Packaging"
 EOF
     
     # Revoked keys file (empty)

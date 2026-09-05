@@ -5,13 +5,17 @@ post_install() {
     fi
     
     # Add and sign Nexus key
-    pacman-key --add /usr/share/pacman/keyrings/nexus.gpg
-    pacman-key --lsign-key "Nexus Linux Packaging"
+    if [[ -f /usr/share/pacman/keyrings/nexus.gpg ]]; then
+        pacman-key --add /usr/share/pacman/keyrings/nexus.gpg
+        # Note: You must manually lsign the key after verifying the fingerprint:
+        # pacman-key --lsign-key "Nexus Linux Packaging"
+        # Or by fingerprint: pacman-key --lsign-key FINGERPRINT
+    fi
     
     # Import trusted keys
     if [[ -f /usr/share/pacman/keyrings/nexus-trusted ]]; then
         while read -r line; do
-            [[ -n "$line" ]] && pacman-key --finger "$line"
+            [[ -n "$line" && ! "$line" =~ ^# ]] && pacman-key --finger "$line" 2>/dev/null || true
         done < /usr/share/pacman/keyrings/nexus-trusted
     fi
     

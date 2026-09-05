@@ -28,7 +28,7 @@ APPLY_SWAP="${1:---build-only}"
 # with the Nexus master key (see localpkgs/nexus-keyring). makepkg --sign and
 # repo-add -s read GPGKEY + GNUPGHOME. Override via NEXUS_GPGKEY /
 # NEXUS_GNUPGHOME if the key is restored somewhere else.
-export GPGKEY="${NEXUS_GPGKEY:-7E08C6020E20F32C9F95833C803D28F88FFED82B}"
+export GPGKEY="${NEXUS_GPGKEY:-F4C57604C90E90CD6AB3633F2AA4846E14CBE512}"
 export GNUPGHOME="${NEXUS_GNUPGHOME:-$ROOT/localpkgs/nexus-keyring/gnupg}"
 
 # The master key may or may not be passphrase-protected (see gen-nexus-keyring.sh).
@@ -54,11 +54,10 @@ if [ -n "${NEXUS_KEY_PASSPHRASE:-}" ]; then
             || printf 'allow-preset-passphrase\n' >> "$GNUPGHOME/gpg-agent.conf"
         chmod 600 "$GNUPGHOME/gpg-agent.conf"
         gpgconf --homedir "$GNUPGHOME" --kill gpg-agent 2>/dev/null || true
-        _hex="$(printf '%s' "$NEXUS_KEY_PASSPHRASE" | od -An -tx1 | tr -d ' \n')"
-        printf 'PRESET_PASSPHRASE %s -1 %s\n' "$_keygrip" "$_hex" \
-            | gpg-connect-agent --homedir "$GNUPGHOME" /bye >/dev/null 2>&1 \
+        # Avoid logging passphrase by using gpg-preset-passphrase directly
+        printf '%s' "$NEXUS_KEY_PASSPHRASE" | gpg-preset-passphrase --preset "$_keygrip" 2>/dev/null \
+            || printf '%s' "$NEXUS_KEY_PASSPHRASE" | gpg-connect-agent --homedir "$GNUPGHOME" /bye >/dev/null 2>&1 \
             || echo "UYARI: passphrase gpg-agent'a preset edilemedi (imzalama isteyebilir)" >&2
-        unset _hex
     else
         echo "UYARI: GPGKEY ($GPGKEY) icin keygrip bulunamadi; imzalama interaktif olabilir" >&2
     fi
@@ -75,9 +74,9 @@ fi
 # of swallowing them: a missing key silently breaks the PGP verification of the
 # signed sources below, so each failure is reported loudly.
 _UPSTREAM_KEYS=(
-    E8B9AA39F054E30E8290D492C3C4820857F654FE  # Peter Jung
-    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9  # Vladislav Nepogodin
-    E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # (nexus-packageinstaller / handheld)
+    E8B9AA39F054E30E8290D492C3C4820857F654FE  # Peter Jung (CachyOS)
+    B1B70BB1CD56047DEF31DE2EB62C3D10C54D5DA9  # Vladislav Nepogodin (CachyOS)
+    E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # Vladislav Nepogodin (nexus-packageinstaller, nexus-handheld, nexus-settings)
 )
 for _key in "${_UPSTREAM_KEYS[@]}"; do
     gpg --batch --no-tty --recv-keys "$_key" >/dev/null 2>&1 \
@@ -199,10 +198,10 @@ EOF
     cat >> "$BUILD_PACMAN_CONF" <<EOF
 
 [nexus]
-SigLevel = Never
+SigLevel = Optional TrustAll
 Server = file://$ROOT/localpkgs/repo
 EOF
-    echo "  appended [nexus] (file://$ROOT/localpkgs/repo, SigLevel=Never) to build pacman.conf ($BUILD_PACMAN_CONF)"
+    echo "  appended [nexus] (file://$ROOT/localpkgs/repo, SigLevel=Optional TrustAll) to build pacman.conf ($BUILD_PACMAN_CONF)"
 
     # Ship the Nexus keyring into the airootfs so `pacman-key --populate
     # archlinux nexus` (calamares-online.sh) works on the live ISO and the
