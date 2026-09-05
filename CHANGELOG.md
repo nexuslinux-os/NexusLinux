@@ -1,6 +1,26 @@
 # Nexus Linux Changelog
 
-## 2026-09-04
+## 2026-09-05
+
+### Rust Integration (Major Feature)
+
+* **8 New CLI Tools in Rust** (`nexus-rust-tools` meta-package)
+  - `nexus-info` — System information display (JSON/pretty output)
+  - `nexus-version` — Version information tool (JSON/short/full)
+  - `nexus-check` — System health check (disk, memory, network, services, security)
+  - `nexus-hardware` — Hardware detection (CPU, RAM, GPU, disks, network, USB, PCI)
+  - `nexus-micro` — Micro settings (zram, hostname, services)
+  - `nexus-installer` — Package installer backend (alpm bindings)
+  - `nexus-theme` — Wallpaper/theme utilities (generate, apply, list)
+  - `nexus-build` — Build helpers (verify, validate, gen pkglist, create ISO)
+
+* **Rust Workspace Infrastructure**
+  - Cargo workspace with 8 crates in `localpkgs/rust-workspace/`
+  - Cargo.lock with 214 crates locked
+  - `nexus-rust-tools` meta-package builds all 8 binaries
+  - Added to both `packages_desktop.x86_64` and `packages_minimal.x86_64`
+
+### 2026-09-04
 
 ### Major Changes
 
@@ -65,11 +85,29 @@
 * **ClamAV**: Antivirus included by default
   - `clamav` daemon + `clamtk` GUI
 
+### Rust Tooling Infrastructure
+
+* **Rust Workspace** (`localpkgs/rust-workspace/`)
+  - 8 crates in Cargo workspace
+  - Cargo.lock with 214 crates locked
+  - `nexus-rust-tools` meta-package builds all 8 binaries
+  - Added to both `packages_desktop.x86_64` and `packages_minimal.x86_64`
+
+* **Build System Updates**
+  - `cargo fetch --locked --target x86_64-unknown-linux-gnu`
+  - `cargo build --release --frozen --workspace`
+  - `nexus-rust-tools` meta-package builds all 8 binaries
+
 ### Documentation
 
-* **README.md**: Rewritten for pure Arch base
+* **README.md**: Rewritten with banner, Rust tools, updated package list
 * **CONTRIBUTING.md**: Updated for Arch-based workflow
 * **SECURITY.md**: Removed CachyOS references
+* **GITHUB_ISSUES.md**: 42 issues catalog from code review
+* **create_github_issues.py**: Script to auto-create GitHub issues
+- **.vscode**: Complete VS Code config (tasks, debug, snippets, keybindings)
+- **.gitattributes** + **.github/linguist**: Rust language detection for GitHub
+- **.github/linguist**: Linguist override for Rust detection
 
 ---
 

@@ -4,7 +4,7 @@
 
 # Nexus Linux
 
-A Linux distribution built on **pure Arch Linux** with `archiso`. Nexus Linux ships the KDE Plasma desktop, the Calamares installer (offline and online), and its own repository of packages with Nexus branding.
+A Linux distribution built on **pure Arch Linux** with `archiso`. Nexus Linux ships the KDE Plasma desktop, the Calamares installer (offline and online), and its own repository of packages with Nexus branding. Includes **8 Rust-based CLI tools** for system management, hardware detection, health checks, and build automation.
 
 This repository contains the live ISO build configuration and the source for the Nexus packages.
 
@@ -14,32 +14,61 @@ This repository contains the live ISO build configuration and the source for the
 .
 ├── archiso/                    # airootfs overlay, pacman.conf, package lists
 ├── localpkgs/                  # Nexus packages (built into a local repo)
+│   ├── nexus-branding/         # os-release, lsb-release
+│   ├── nexus-wallpapers/       # Default wallpapers
+│   ├── nexus-keyring/          # Package signing keys
+│   ├── nexus-calamares/        # Calamares modules, branding, config
+│   ├── nexus-kde-settings/     # KDE Plasma defaults
+│   ├── nexus-rust-tools/       # 8 Rust CLI tools (meta-package)
+│   └── rust-workspace/         # Cargo workspace (8 crates)
+├── .vscode/                    # VS Code config (tasks, debug, snippets)
+├── .github/                    # GitHub Linguist config
 ├── build-nexus-iso.sh          # one-shot ISO build (+ release artifacts)
 ├── build-nexus-repo.sh         # package build + profile wiring
 ├── release-nexus.sh            # publish repo/ISO to GitHub Releases
 ├── buildiso.sh                 # upstream ISO build driver
-└── util-iso.sh                 # profile/version helpers
+├── util-iso.sh                 # profile/version helpers
+├── CHANGELOG.md                # Version history
+├── CONTRIBUTING.md             # Contribution guide
+├── SECURITY.md                 # Security policy
+├── GITHUB_ISSUES.md            # 42 issues catalog from code review
+├── create_github_issues.py     # Auto-create GitHub issues
+└── readme-banner.svg           # Banner image
 ```
 
 ## Packages (`localpkgs/`)
 
+### Core Nexus Packages
+
 | Package | Purpose |
 | --- | --- |
-| `nexus-keyring` | Nexus package signing keys (`nexus.gpg`, `nexus-trusted`, `nexus-revoked`) |
-| `nexus-mirrorlist` | Nexus mirrorlist (installed to `/etc/pacman.d/` paths) |
-| `nexus-hooks` | libalpm hooks |
+| `nexus-branding` | os-release, lsb-release, /usr/lib/os-release |
 | `nexus-wallpapers` | Default wallpapers + per-desktop defaults |
-| `nexus-kde-settings` | Default KDE Plasma settings |
-| `nexus-fish-config` | Fish shell configuration |
-| `nexus-zsh-config` | Zsh shell configuration |
-| `nexus-settings` | System settings (systemd services, udev rules) |
-| `nexus-micro-settings` | Micro tunables (zram, sysctl) |
-| `nexus-kernel-manager` | Kernel manager |
-| `nexus-packageinstaller` | Package installer |
-| `nexus-handheld` | Handheld (Steam Deck-like) support |
-| `nexus-mangowc-dms` | MangoWM (+DMS) settings |
-| `nexus-rate-mirrors` | Mirror rating service/timer |
-| `nexus-calamares` | Calamares installer (built from source) |
+| `nexus-keyring` | Nexus package signing keys (`nexus.gpg`, `nexus-trusted`, `nexus-revoked`) |
+| `nexus-calamares` | Calamares modules, branding, config (Calamares app built separately) |
+| `nexus-kde-settings` | Default KDE Plasma settings (kdeglobals, kwinrc, plasmarc, plasmarc) |
+| `nexus-rust-tools` | **Meta-package: 8 Rust CLI tools** (see below) |
+
+### Rust CLI Tools (`nexus-rust-tools` meta-package)
+
+| Binary | Purpose |
+| --- | --- |
+| `nexus-info` | System information display (JSON/pretty output) |
+| `nexus-version` | Version info tool (JSON/short/full) |
+| `nexus-check` | System health check (disk, memory, network, services, security) |
+| `nexus-hardware` | Hardware detection (CPU, RAM, GPU, disks, network, USB, PCI) |
+| `nexus-micro` | Micro settings (zram, hostname, services) |
+| `nexus-installer` | Package installer backend (alpm bindings) |
+| `nexus-theme` | Wallpaper/theme utilities (generate, apply, list) |
+| `nexus-build` | Build helpers (verify, validate, gen pkglist, create ISO) |
+
+### Rust Workspace (`localpkgs/rust-workspace/`)
+
+Cargo workspace with 8 crates:
+- `nexus-info`, `nexus-version`, `nexus-check`, `nexus-hardware`
+- `nexus-micro`, `nexus-installer-backend`, `nexus-theme`, `nexus-build-helpers`
+
+Built as `nexus-rust-tools` meta-package via `cargo build --release --frozen --workspace`
 
 ## Building the ISO
 
@@ -54,35 +83,20 @@ sudo pacman -S archiso --needed
 ### One-shot build
 
 ```bash
-cd /home/cahit/Projeler/nexus-live/NexusLinux
+cd /path/to/nexus-live
 ./build-nexus-iso.sh                 # default profile: "desktop minimal"
 ./build-nexus-iso.sh "desktop"       # single profile
 ```
 
 This script:
 
-1. Imports the upstream PGP keys used for signed sources
-2. Installs all build/makedepends in one `pacman` call
-3. Builds every package in `localpkgs/` and populates `localpkgs/repo/`
-   (transient network failures are retried up to 3 times)
-4. Wires `nexus-*` packages into the ISO profile and points the
-   `[nexus]` repo at **GitHub Releases** (`latest/download/`), so the live
-   installer and installed systems resolve Nexus packages over the network
-5. Builds the ISO and writes release artifacts to `out/<profile>/`
+1. Installs build dependencies (archiso, base-devel, git, Calamares deps, Rust toolchain)
+2. Builds Calamares from source (v3.3.12) as a package
+3. Builds all local Nexus packages via `makepkg` and populates `localrepo/`
+4. Creates local pacman repo database (`repo-add`)
+4. Registers `[nexus]` repo in `pacman.conf` (priority over core/extra)
+5. Builds ISO via `mkarchiso` and writes release artifacts to `out/<profile>/`
    (`.sig`, `SHA256SUMS`, `.img`, `pkgs.txt`)
-
-Publishing the local repo before an ISO build makes live installs work:
-
-```bash
-./build-nexus-repo.sh           # build + sign packages, create local repo
-./release-nexus.sh repo         # publish the repo as a GitHub Release
-./build-nexus-iso.sh            # ISO with the nexus-* packages wired (default ON)
-./release-nexus.sh iso out/desktop/nexus.iso   # publish the ISO
-```
-
-- GitHub Releases is used as the package server (no dedicated mirror yet);
-  every update is a new release. Assets are served at
-  `https://github.com/nexuslinux-os/NexusLinux/releases/latest/download/`.
 
 ### Manual steps
 
@@ -90,7 +104,7 @@ Publishing the local repo before an ISO build makes live installs work:
 # build packages + create local repo
 ./build-nexus-repo.sh
 
-# wire packages into the ISO profile
+# wire packages into the ISO profile (registers local repo in pacman.conf)
 ./build-nexus-repo.sh --apply-swap
 
 # build the ISO
@@ -99,15 +113,33 @@ Publishing the local repo before an ISO build makes live installs work:
 
 ## Live desktop installer
 
-On the live desktop Calamares opens directly (autostart entry), instead of a
-welcome/hello app:
+On the live desktop Calamares opens directly (autostart entry), instead of a welcome/hello app:
 
-- `/usr/local/bin/launch-calamares.sh` — picks the online installer when a
-  network is available, otherwise the offline one
-- `/usr/local/bin/calamares-online.sh` — refreshes the keyring, applies Nexus
-  branding, launches Calamares
-- `/usr/local/bin/calamares-offline.sh` — network-free variant using the
-  Calamares shipped on the ISO
+- `/usr/local/bin/launch-calamares.sh` — picks the online installer when a network is available, otherwise the offline one
+- `/usr/local/bin/calamares-online.sh` — refreshes the keyring, applies Nexus branding, launches Calamares
+- `/usr/local/bin/calamares-offline.sh` — network-free variant using the Calamares shipped on the ISO
+
+## DE Selection
+
+Only 3 desktop environments available in Calamares:
+- **KDE Plasma** (recommended, default)
+- **GNOME**
+- **COSMIC**
+
+## Hardware Support (Debian-style out-of-the-box)
+
+- **Firmware**: `linux-firmware-*` (qlogic, bnx2x, liquidio, nfp, qcom, whence)
+- **GPU**: `intel-media-driver`, `vulkan-intel`, `vulkan-radeon`, `libva-*`, `mesa-vdpau`
+- **Network**: `r8168`, `broadcom-wl-dkms`, `rtl8821cu-dkms`, `rtl8852be-dkms`, `mt7921-firmware`
+- **Bluetooth**: `bluez`, `bluez-utils`, `bluez-plugins`, `bluez-hid2hci`
+- **Printing/Scanning**: `cups`, `cups-filters`, `cups-pdf`, `ghostscript`, `gsfonts`, `system-config-printer`, `simple-scan`, `sane`, `sane-airscan`
+- **Avahi/mDNS**: `avahi`, `nss-mdns`
+
+## Security
+
+* **ClamAV**: Antivirus included by default (`clamav` daemon + `clamtk` GUI)
+* **GRUB Theme**: Nexus-branded with dark blue gradient
+* **Calamares**: Built from source (v3.3.12), minimal modules
 
 ## Signing key
 
@@ -120,23 +152,12 @@ The master signing key is generated by `localpkgs/nexus-keyring/gen-nexus-keyrin
 
 ## Repository signing
 
-Every Nexus package and the `nexus.db` repository database are signed with the
-master key:
+Every Nexus package and the `nexus.db` repository database are signed with the master key:
 
-- `build-nexus-repo.sh` builds with `makepkg --sign` and adds the database with
-  `repo-add -s -k` using `GPGKEY`/`GNUPGHOME` (override via `NEXUS_GPGKEY` /
-  `NEXUS_GNUPGHOME`). The key is passphrase-protected; provide the passphrase
-  with `NEXUS_KEY_PASSPHRASE` (CI / secrets manager) or enter it at the prompt.
-  `build-nexus-repo.sh` presets it into `gpg-agent`, so signing stays non-interactive.
-- The `nexus-keyring` package's install script runs `pacman-key --add` and
-  `pacman-key --lsign-key F4C57604C90E90CD6AB3633F2AA4846E14CBE512`, so installed
-  systems trust the key and verify the signatures.
-- The `[nexus]` repo (added by `./build-nexus-repo.sh --apply-swap`) points at
-  GitHub Releases and uses `SigLevel = Required DatabaseOptional` (packages must be
-  signed by the Nexus master key; the db signature is optional).
-- `release-nexus.sh repo` publishes `nexus.db(.sig)`, `nexus.files(.sig)` and every
-  `.pkg.tar.zst(.sig)` as release assets; `release-nexus.sh iso <file.iso>` publishes
-  the ISO with its signature, checksum, `.img` and package list.
+- `build-nexus-repo.sh` builds with `makepkg --sign` and adds the database with `repo-add -s -k` using `GPGKEY`/`GNUPGHOME`
+- The `nexus-keyring` package's install script runs `pacman-key --add` and `pacman-key --lsign-key F4C57604C90E90CD6AB3633F2AA4846E14CBE512`
+- The `[nexus]` repo uses `SigLevel = Required DatabaseOptional` (packages must be signed by the Nexus master key)
+- `release-nexus.sh repo` publishes `nexus.db(.sig)`, `nexus.files(.sig)` and every `.pkg.tar.zst(.sig)` as release assets
 
 Rebuild the keyring after any change with:
 
@@ -144,9 +165,18 @@ Rebuild the keyring after any change with:
 cd localpkgs/nexus-keyring && GNUPGHOME="$PWD/gnupg" GPGKEY=F4C57604C90E90CD6AB3633F2AA4846E14CBE512 makepkg -f --sign
 ```
 
+## CI/CD & Development
+
+* **.vscode/**: Complete VS Code config (tasks, debug, snippets, keybindings)
+* **.github/linguist**: GitHub Linguist config for Rust detection
+* **.gitattributes**: Linguist overrides for language detection
+* **.vscode/extensions.json**: Recommended extensions (shellcheck, yaml, gitlens, docker)
+* **GITHUB_ISSUES.md**: 42 issues catalog from code review
+* **create_github_issues.py**: Script to auto-create GitHub issues
+* **.github/linguist**: Linguist override for Rust detection
+
 ## Known notes
 
-- The installed system's `pacman.conf` is generated from `archiso/pacman.conf` +
-  `pacman-more.conf` by shellprocess scripts, and the repo section name must match the
-  mirror's database filename. Nexus uses its own repo section names.
-- Packages from Arch repositories remain as upstream Arch packages.
+- The installed system's `pacman.conf` is generated from `archiso/pacman.conf` + `pacman-more.conf` by shellprocess scripts
+- Nexus uses its own repo section names (`[nexus]`)
+- Pure Arch base — no CachyOS, Chaotic-AUR, or third-party repos
