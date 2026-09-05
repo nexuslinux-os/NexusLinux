@@ -52,5 +52,6 @@ with open('$pkgdir/usr/share/backgrounds/nexus/default.png', 'wb') as f:
     }
     
     # Symlink for Plasma
+    install -dm755 "$pkgdir/usr/share/wallpapers/nexus"
     ln -sf ../backgrounds/nexus/default.png "$pkgdir/usr/share/wallpapers/nexus/default.png"
 }

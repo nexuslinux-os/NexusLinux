@@ -11,8 +11,10 @@ set -o pipefail
 cd "$(dirname "$0")"
 ROOT="$(pwd)"
 PROFILE="${1:-desktop}"
+LOCALREPO="$ROOT/localrepo"
+LOCALREPO_NAME="nexus"
 
-for dep in mkarchiso; do
+for dep in mkarchiso repo-add; do
     command -v "$dep" >/dev/null 2>&1 || { echo "HATA: eksik bağımlılık: $dep" >&2; exit 1; }
 done
 
@@ -29,26 +31,27 @@ build_calamares() {
         -DCMAKE_BUILD_TYPE=Release \
         -DINSTALL_CONFIG=ON \
         -DSKIP_MODULES="webview interactiveterminal initramfs initramfscfg \
-            partition rawfs mount welcomeq license keyboard users locale \
+            partition rawfs mount welcomeq license keyboard locale \
             networkcfg displaymanager bootloader grub grubcfg efi_bootloader \
-            services-openrc services-systemd fstab fsck keyboardq summaryq"
+            services-openrc services-systemd fstab fsck keyboardq summaryq usersq"
     make -j$(nproc)
     sudo make install
     cd "$ROOT"
     rm -rf "$TMPDIR"
 }
 
-# Install build dependencies FIRST (including Calamares build deps)
+# Install build dependencies FIRST (including Calamares build deps + pacman-contrib for repo-add)
 echo "==> [1/3] Installing build dependencies"
 sudo pacman -S --needed --noconfirm \
-    archiso base-devel git \
+    archiso base-devel git pacman-contrib \
     squashfs-tools dosfstools libisoburn \
     arch-install-scripts \
     jsoncpp \
     cmake extra-cmake-modules qt6-base qt6-declarative qt6-svg \
     kconfig kcoreaddons kcrash ki18n kparts kpmcore kservice kwidgetsaddons \
     libpwquality mkinitcpio-openswap networkmanager polkit-qt6 python \
-    qt6-tools yaml-cpp boost boost-libs
+    qt6-tools yaml-cpp boost boost-libs \
+    vulkan-headers
 
 # Reinstall cmake after jsoncpp update to fix libjsoncpp.so.26 linkage
 sudo pacman -S --needed --noconfirm --overwrite '*' cmake
@@ -59,33 +62,52 @@ sudo ldconfig
 # makepkg comes from base-devel
 command -v makepkg >/dev/null 2>&1 || { echo "HATA: makepkg not found after base-devel install" >&2; exit 1; }
 
+# Prepare a clean local pacman repo directory for the nexus-* packages.
+# mkarchiso cannot "see" packages that only sit in /var/cache/pacman/pkg -
+# it needs a real repo database (repo-add) that pacman.conf points to.
+echo "==> Preparing local pacman repo at $LOCALREPO"
+rm -rf "$LOCALREPO"
+mkdir -p "$LOCALREPO"
+
 # Build local Nexus packages (branding, wallpapers, keyring, calamares config)
 echo "==> Building local Nexus packages"
 for pkg in nexus-branding nexus-wallpapers nexus-keyring nexus-calamares; do
     if [ -d "$ROOT/localpkgs/$pkg" ]; then
         echo "  building $pkg"
         ( cd "$ROOT/localpkgs/$pkg" && makepkg -sf --noconfirm --skippgpcheck )
-        # Copy to pacman cache so they're available during ISO build
-        cp "$ROOT/localpkgs/$pkg"/*.pkg.tar.zst /var/cache/pacman/pkg/ 2>/dev/null || true
-        sudo cp "$ROOT/localpkgs/$pkg"/*.pkg.tar.zst /var/cache/pacman/pkg/ 2>/dev/null || true
+        cp -f "$ROOT/localpkgs/$pkg"/*.pkg.tar.zst "$LOCALREPO/"
     fi
 done
 
-# Build Calamares from source AFTER deps are installed
-# Check if calamares is already installed
-if ! pacman -Q calamares >/dev/null 2>&1 && ! command -v calamares >/dev/null 2>&1; then
-    echo "==> [2/3] Building Calamares from source"
-    build_calamares
+# Build the repo database so pacman/mkarchiso can resolve nexus-* as install targets
+echo "==> Building local repo database ($LOCALREPO_NAME.db.tar.gz)"
+( cd "$LOCALREPO" && repo-add --new "$LOCALREPO_NAME.db.tar.gz" ./*.pkg.tar.zst )
+
+# Make sure archiso/pacman.conf actually references our local repo.
+# Insert it at the TOP so it's checked before core/extra/multilib.
+PACMAN_CONF="$ROOT/archiso/pacman.conf"
+if [ -f "$PACMAN_CONF" ] && ! grep -q "^\[$LOCALREPO_NAME\]" "$PACMAN_CONF"; then
+    echo "==> Registering [$LOCALREPO_NAME] repo in $PACMAN_CONF"
+    TMP_CONF="$(mktemp)"
+    {
+        echo "[$LOCALREPO_NAME]"
+        echo "SigLevel = Optional TrustAll"
+        echo "Server = file://$LOCALREPO"
+        echo
+        cat "$PACMAN_CONF"
+    } > "$TMP_CONF"
+    mv "$TMP_CONF" "$PACMAN_CONF"
+elif [ ! -f "$PACMAN_CONF" ]; then
+    echo "HATA: $PACMAN_CONF bulunamadı, [nexus] reposu eklenemedi." >&2
+    exit 1
 else
-    echo "==> [2/3] Calamares already installed"
+    echo "==> [$LOCALREPO_NAME] repo zaten pacman.conf içinde, atlanıyor"
 fi
 
-# Clean any stale nexus-* packages from cache (shouldn't exist but safe)
-if ls /var/cache/pacman/pkg/nexus-*.pkg.tar.zst >/dev/null 2>&1; then
-    sudo rm -f /var/cache/pacman/pkg/nexus-*.pkg.tar.zst \
-               /var/cache/pacman/pkg/nexus-*.pkg.tar.zst.sig
-    echo "    -> cleaned stale nexus-* from pacman cache"
-fi
+# Build Calamares from source AFTER deps are installed
+# Always build from source to ensure Nexus branding and avoid CachyOS package
+echo "==> [2/3] Building Calamares from source"
+build_calamares
 
 echo "==> [3/3] Building ISO (profile: $PROFILE)"
 
