@@ -1,2 +1,37 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# GitHub Linguist configuration
+# https://github.com/github/linguist
+
+# Mark Rust files as detectable
+*.rs linguist-language=Rust
+
+# Ignore build artifacts for language detection
+build/ linguist-vendored
+build/ linguist-generated
+localrepo/ linguist-vendored
+out/ linguist-vendored
+*.pkg.tar.zst linguist-vendored
+*.pkg.tar.zst.sig linguist-vendored
+
+# Documentation
+*.md linguist-documentation
+*.txt linguist-documentation
+
+# Configuration files
+*.yaml linguist-language=YAML
+*.yml linguist-language=YAML
+*.toml linguist-language=TOML
+*.conf linguist-language=INI
+*.ini linguist-language=INI
+
+# Shell scripts
+*.sh linguist-language=Shell
+
+# Python
+*.py linguist-language=Python
+
+# PKGBUILD
+PKGBUILD linguist-language=Bash
+*.install linguist-language=Bash
+
+# Rust workspace - mark as documentation if needed
+localpkgs/rust-workspace/**/*.rs linguist-language=Rust

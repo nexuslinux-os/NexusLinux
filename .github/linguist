@@ -1,0 +1,16 @@
+# Linguist overrides for GitHub language detection
+# https://github.com/github/linguist/blob/master/docs/overrides.md
+
+# Override paths for language detection
+localpkgs/rust-workspace/**/*.rs linguist-language=Rust
+
+# Exclude build artifacts
+build/ linguist-vendored
+build/ linguist-generated
+localrepo/ linguist-vendored
+out/ linguist-vendored
+*.pkg.tar.zst linguist-vendored
+*.pkg.tar.zst.sig linguist-vendored
+*.sig linguist-vendored
+*.img linguist-vendored
+*.iso linguist-vendored
