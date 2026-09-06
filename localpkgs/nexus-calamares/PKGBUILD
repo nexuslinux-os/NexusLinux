@@ -24,7 +24,9 @@ source=(branding.desc
         look-and-feel/nexus/contents/fonts/fonts.json
         look-and-feel/nexus/contents/icons/icons.json
         look-and-feel/nexus/contents/plasma/desktoptheme.json
-        look-and-feel/nexus/contents/splash/Splash.qml)
+        look-and-feel/nexus/contents/splash/Splash.qml
+        look-and-feel/nexus/contents/colors/BreezeDark.colors
+        look-and-feel/nexus/metadata.json)
 sha256sums=('SKIP'
            'SKIP'
            'SKIP'
@@ -48,6 +50,11 @@ prepare() {
     # $startdir is the directory containing the PKGBUILD
     mkdir -p "$srcdir/colors"
     cp -f "$startdir/colors/BreezeDark.colors" "$srcdir/colors/BreezeDark.colors"
+    # Copy look-and-feel theme files
+    mkdir -p "$srcdir/look-and-feel/nexus/contents/colors"
+    cp -f "$startdir/look-and-feel/nexus/contents/colors/BreezeDark.colors" "$srcdir/look-and-feel/nexus/contents/colors/BreezeDark.colors"
+    mkdir -p "$srcdir/look-and-feel/nexus/contents"
+    cp -f "$startdir/metadata.json" "$srcdir/look-and-feel/nexus/metadata.json"
 }
 
 package() {
