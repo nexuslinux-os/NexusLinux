@@ -17,7 +17,6 @@ source=(branding.desc
         plasmarc
         plasma-org.kde.plasma.desktop-appletsrc
         metadata.json
-        colors/BreezeDark.colors
         fonts/fonts.json
         icons/icons.json
         plasma/desktoptheme.json
@@ -45,9 +44,8 @@ sha256sums=('SKIP'
            'SKIP')
 
 prepare() {
-    # Ensure colors directory exists and BreezeDark.colors is available
-    # $startdir is the directory containing the PKGBUILD (source directory)
-    # $srcdir is the build directory where sources are extracted
+    # Copy BreezeDark.colors from source directory to build directory
+    # $startdir is the directory containing the PKGBUILD
     mkdir -p "$srcdir/colors"
     cp -f "$startdir/colors/BreezeDark.colors" "$srcdir/colors/BreezeDark.colors"
 }
