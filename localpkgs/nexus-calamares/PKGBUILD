@@ -22,7 +22,6 @@ source=(branding.desc
         icons/icons.json
         plasma/desktoptheme.json
         splash/Splash.qml
-        look-and-feel/nexus/contents/colors/BreezeDark.colors
         look-and-feel/nexus/contents/fonts/fonts.json
         look-and-feel/nexus/contents/icons/icons.json
         look-and-feel/nexus/contents/plasma/desktoptheme.json
@@ -87,8 +86,6 @@ package() {
     # Look-and-feel theme "Nexus" for lookandfeeltool (legacy path)
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents"
     install -m644 metadata.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/metadata.json"
-    install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors"
-    install -m644 colors/BreezeDark.colors "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/colors/BreezeDark.colors"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts"
     install -m644 fonts/fonts.json "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/fonts/fonts.json"
     install -dm755 "$pkgdir/usr/share/plasma/look-and-feel/nexus/contents/icons"
