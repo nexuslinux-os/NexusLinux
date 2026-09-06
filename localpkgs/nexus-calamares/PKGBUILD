@@ -42,8 +42,13 @@ sha256sums=('SKIP'
            'SKIP'
            'SKIP'
            'SKIP'
-           'SKIP'
            'SKIP')
+
+prepare() {
+    # Ensure colors directory exists in srcdir for package()
+    mkdir -p "$srcdir/colors"
+    cp -f "$srcdir/../colors/BreezeDark.colors" "$srcdir/colors/BreezeDark.colors"
+}
 
 package() {
     # Calamares modules
