@@ -16,25 +16,8 @@ source=(branding.desc
         kwinrc
         plasmarc
         plasma-org.kde.plasma.desktop-appletsrc
-        metadata.json
-        fonts/fonts.json
-        icons/icons.json
-        plasma/desktoptheme.json
-        splash/Splash.qml
-        look-and-feel/nexus/contents/fonts/fonts.json
-        look-and-feel/nexus/contents/icons/icons.json
-        look-and-feel/nexus/contents/plasma/desktoptheme.json
-        look-and-feel/nexus/contents/splash/Splash.qml
-        look-and-feel/nexus/contents/colors/BreezeDark.colors
-        look-and-feel/nexus/metadata.json)
+        metadata.json)
 sha256sums=('SKIP'
-           'SKIP'
-           'SKIP'
-           'SKIP'
-           'SKIP'
-           'SKIP'
-           'SKIP'
-           'SKIP'
            'SKIP'
            'SKIP'
            'SKIP'
@@ -46,15 +29,28 @@ sha256sums=('SKIP'
            'SKIP')
 
 prepare() {
-    # Copy BreezeDark.colors from source directory to build directory
-    # $startdir is the directory containing the PKGBUILD
-    mkdir -p "$srcdir/colors"
-    cp -f "$startdir/colors/BreezeDark.colors" "$srcdir/colors/BreezeDark.colors"
-    # Copy look-and-feel theme files
-    mkdir -p "$srcdir/look-and-feel/nexus/contents/colors"
-    cp -f "$startdir/look-and-feel/nexus/contents/colors/BreezeDark.colors" "$srcdir/look-and-feel/nexus/contents/colors/BreezeDark.colors"
-    mkdir -p "$srcdir/look-and-feel/nexus/contents"
-    cp -f "$startdir/metadata.json" "$srcdir/look-and-feel/nexus/metadata.json"
+    # Copy all source files from startdir to srcdir
+    # This ensures all files are available in the build directory
+    cp -r "$startdir/colors" "$srcdir/" 2>/dev/null || true
+    cp -r "$startdir/fonts" "$srcdir/" 2>/dev/null || true
+    cp -r "$startdir/icons" "$srcdir/" 2>/dev/null || true
+    cp -r "$startdir/plasma" "$srcdir/" 2>/dev/null || true
+    cp -r "$startdir/splash" "$srcdir/" 2>/dev/null || true
+    cp -r "$startdir/look-and-feel" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/branding.desc" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/write-os-release.sh" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/shellprocess.conf" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/netinstall.yaml" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/settings_offline.conf" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/kdeglobals" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/kwinrc" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/plasmarc" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/plasma-org.kde.plasma.desktop-appletsrc" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/metadata.json" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/write-os-release.sh" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/shellprocess.conf" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/netinstall.yaml" "$srcdir/" 2>/dev/null || true
+    cp -f "$startdir/settings_offline.conf" "$srcdir/" 2>/dev/null || true
 }
 
 package() {
