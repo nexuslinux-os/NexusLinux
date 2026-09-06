@@ -45,9 +45,10 @@ sha256sums=('SKIP'
            'SKIP')
 
 prepare() {
-    # Ensure colors directory exists in srcdir for package()
+    # makepkg already extracts sources to $srcdir/
+    # colors/BreezeDark.colors is already at $srcdir/colors/BreezeDark.colors
+    # Ensure directory exists for package()
     mkdir -p "$srcdir/colors"
-    cp -f "$srcdir/../colors/BreezeDark.colors" "$srcdir/colors/BreezeDark.colors"
 }
 
 package() {
